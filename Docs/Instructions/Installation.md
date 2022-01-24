@@ -58,7 +58,7 @@ It's also working if you have a VIP address and then attach the hosts to the VIP
 2. In the dashboard.ps1 file you should change [bool]$ActivateLoadBalancing to $true
 3. Go in to the Component loadbalancing.psm1 file and change the host1 etc. and also add the AppToken for each host.
 
-## VIP
+## VIP address
 If your using a VIP address you also need to change in the appsettings.json on each host.
 
 1. Change the http url to the VIP address
