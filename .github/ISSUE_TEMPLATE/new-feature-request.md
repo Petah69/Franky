@@ -1,17 +1,14 @@
 ---
-name: Feature request
+name: New feature request
 about: Suggest an idea for this project
 title: ''
-labels: enhancement
+labels: "\U0001F680 new feature request"
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
-
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**Describe the new feature you'd like**
+A clear and concise description of what the new feature are and what it should do.
 
 **Describe alternatives you've considered**
 A clear and concise description of any alternative solutions or features you've considered.
