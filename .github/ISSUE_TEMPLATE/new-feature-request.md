@@ -1,6 +1,6 @@
 ---
 name: New feature request
-about: Suggest an idea for this project
+about: Suggest an new idea/feature
 title: ''
 labels: "\U0001F680 new feature request"
 assignees: ''
