@@ -1,0 +1,1 @@
+﻿New-PSUScript -Name "CleanClient.ps1" -Description "Cleaning up temp folders and files on client" -Path "CleanClient.ps1" -Environment "Franky" -InformationAction "Continue" -MaxHistory 10 

@@ -1,0 +1,1 @@
+﻿New-PSUPublishedFolder -RequestPath "/pictures" -Path "C:\ProgramData\UniversalAutomation\Repository\Pictures"

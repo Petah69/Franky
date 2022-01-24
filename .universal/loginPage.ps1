@@ -1,0 +1,1 @@
+﻿New-PSULoginPage -Image "/pictures/" -Title "Franky Beta 1" -PrimaryColor "white" -SecondaryColor "white" -SecondaryFontColor "black" -HeaderFontColor "black" -HeaderColor "rgba(0, 151, 207, 0.6)" -Copyright "© 2022 - Stolpe.io"
