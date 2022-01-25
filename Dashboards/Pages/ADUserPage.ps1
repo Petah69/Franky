@@ -358,12 +358,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                     }
                                 }
                                 New-UDGrid -Item -Size 2 -Content {
-                                    if ($ADuser.Passwordneverexpires -eq $true) {
-                                        New-UDTypography -Text "Never expires!"
-                                    }
-                                    else {
-                                        Set-UserChangePasswordNextLogin -RefreshOnClose "UserSearch" -UserName $SearchUserName -PWChangeStatus $ADUser.pwdLastSet -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
-                                    }
+                                    Set-UserChangePasswordNextLogin -RefreshOnClose "UserSearch" -UserName $SearchUserName -PWChangeStatus $ADUser.pwdLastSet -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                 }
                                 New-UDGrid -Item -Size 12 -Content {
                                     New-UDHtml -Markup "</br>"
