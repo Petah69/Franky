@@ -121,6 +121,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                         Remove-TempFilesClientBtn -CurrentHost $CurrentHost -AppToken $AppToken -RefreshOnClose "ComputerSearch" -Computer $ConvertToComputerName -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     }
                                     New-RefreshUDElementBtn -RefreshUDElement 'ComputerSearch'
+                                    Remove-EdgeSettings -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                 }
                                 New-UDGrid -Item -Size 12 -Content {
                                     New-UDHTML -Markup "</br>"

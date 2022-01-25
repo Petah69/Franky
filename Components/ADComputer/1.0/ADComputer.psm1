@@ -1453,4 +1453,58 @@ Function Ping-ADComputer {
     }
 }
 
-Export-ModuleMember -Function "Ping-ADComputer", "Disconnect-UserFromComputer", "Restart-ADComputer", "Show-MonitorInfoBtn", "Show-InstalledDriversBtn", "Get-SysInfo", "Show-NetAdpBtn", "Show-ProcessTableBtn", "Show-InstalledSoftwareBtn", "Show-AutostartTableBtn", "Show-ServicesTableBtn", "Remove-UserProfilesBtn", "Compare-ComputerGrpsBtn", "Show-SchedualTaskTableBtn", "Remove-TempFilesClientBtn"
+Function Remove-EdgeSettings {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)][bool]$ActiveEventLog,
+        [Parameter(Mandatory)][string]$Computer,
+        [Parameter(Mandatory = $false)][string]$EventLogName,
+        [Parameter(Mandatory = $false)][string]$User,
+        [Parameter(Mandatory = $false)][string]$LocalIpAddress,
+        [Parameter(Mandatory = $false)][string]$RemoteIpAddress
+    )
+
+    New-UDTooltip -TooltipContent {
+        New-UDTypography -Text "Delete Edge settings on $($Computer)"
+    } -content { 
+        New-UDButton -Icon (New-UDIcon -Icon power_off) -size medium -Onclick {
+            $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName xvm30069 | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
+
+            Show-UDModal -Header { "Delete Edge settings on $($Computer)" } -Content {
+                New-UDGrid -Spacing '1' -Container -Content {
+                    New-UDGrid -Item -Size 1 -Content { }
+                    New-UDGrid -Item -Size 10 -Content {
+                        New-UDSelect -Id 'EdgeUser' -Option {
+                            New-UDSelectOption -Name 'Select user...' -Value 1
+                            New-UDSelectOption -Name 'All Users' -Value 2
+                            foreach ($user in $profiles) {
+                                New-UDSelectOption -Name $user -Value $user
+                            }
+                        }
+                    }
+                    New-UDGrid -Item -Size 1 -Content { }
+                }
+            } -Footer {
+                New-UDButton -Text "Delete" -OnClick { 
+                    $UserToClean = Get-UDElement -Id 'EdgeUser'
+                    if ($UserToClean -eq 2) {
+                        Invoke-Command -ComputerName $Computer -ScriptBlock { Get-AppXPackage -AllUsers -Name Microsoft.MicrosoftEdge | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register “$($_.InstallLocation)\AppXManifest.xml” -Verbose } }
+                    }
+                    else {
+                        Invoke-Command -ComputerName $Computer -ScriptBlock { Get-AppXPackage -User "LG\$($UserToClean)" -Name Microsoft.MicrosoftEdge | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register “$($_.InstallLocation)\AppXManifest.xml” -Verbose } }
+                    }
+                    Show-UDToast -Message "Edge settings for $($UserToClean) on $($Computer) has now been deleted!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                    if ($ActiveEventLog -eq "True") {
+                        Write-EventLog -LogName $EventLogName -Source "DeleteEdgeSettings" -EventID 10 -EntryType Information -Message "$($User) deleted Edge settings on $($Computer) for $($UserToClean)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                    }
+                    Hide-UDModal
+                }
+                New-UDButton -Text "Close" -OnClick {
+                    Hide-UDModal
+                }
+            } -FullWidth -MaxWidth 'xs' -Persistent
+        }
+    }
+}
+
+Export-ModuleMember -Function "Remove-EdgeSettings", "Ping-ADComputer", "Disconnect-UserFromComputer", "Restart-ADComputer", "Show-MonitorInfoBtn", "Show-InstalledDriversBtn", "Get-SysInfo", "Show-NetAdpBtn", "Show-ProcessTableBtn", "Show-InstalledSoftwareBtn", "Show-AutostartTableBtn", "Show-ServicesTableBtn", "Remove-UserProfilesBtn", "Compare-ComputerGrpsBtn", "Show-SchedualTaskTableBtn", "Remove-TempFilesClientBtn"
