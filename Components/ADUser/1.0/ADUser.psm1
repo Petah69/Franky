@@ -827,6 +827,78 @@ function Edit-ADUserInfo {
                         }
                     }
                 }
+                New-UDButton -Text "Clear" -OnClick {
+                    try {
+                        switch ($ParamToChange) {
+                            EmailAddress {
+                                Set-ADUser -Identity $($UserName) -EmailAddress $Null
+                            }
+                            HomePhone {
+                                Set-ADUser -Identity $($UserName) -HomePhone $Null
+                            }
+                            MobilePhone {
+                                Set-ADUser -Identity $($UserName) -MobilePhone $Null
+                            }
+                            OfficePhone {
+                                Set-ADUser -Identity $($UserName) -OfficePhone $Null
+                            }
+                            FAX {
+                                Set-ADUser -Identity $($UserName) -FAX $Null
+                            }
+                            StreetAddress {
+                                Set-ADUser -Identity $($UserName) -StreetAddress $Null
+                            }
+                            POBOX {
+                                Set-ADUser -Identity $($UserName) -POBOX $Null
+                            }
+                            State {
+                                Set-ADUser -Identity $($UserName) -State $Null
+                            }
+                            City {
+                                Set-ADUser -Identity $($UserName) -City $Null
+                            }
+                            PostalCode {
+                                Set-ADUser -Identity $($UserName) -PostalCode $Null
+                            }
+                            Givenname {
+                                Set-ADUser -Identity $($UserName) -Givenname $Null
+                            }
+                            Surname {
+                                Set-ADUser -Identity $($UserName) -Surname $Null
+                            }
+                            Company {
+                                Set-ADUser -Identity $($UserName) -Company $Null
+                            }
+                            Title {
+                                Set-ADUser -Identity $($UserName) -Title $Null
+                            }
+                            Division {
+                                Set-ADUser -Identity $($UserName) -Division $Null
+                            }
+                            Department {
+                                Set-ADUser -Identity $($UserName) -Department $Null
+                            }
+                            Office {
+                                Set-ADUser -Identity $($UserName) -Office $Null
+                            }
+                            Manager {
+                                Set-ADUser -Identity $($UserName) -Manager $Null  
+                            }
+                        }
+                        Show-UDToast -Message "$($ParamToChange) has now been cleared for $($UserName)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        if ($ActiveEventLog -eq "True") {
+                            Write-EventLog -LogName $EventLogName -Source "ClearUser$($ParamToChange)" -EventID 10 -EntryType Information -Message "$($User) did clear $($ParamToChange) for $($UserName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                        }
+                        if ($NULL -ne $RefreshOnClose) {
+                            Sync-UDElement -Id $RefreshOnClose
+                        }
+                        Hide-UDModal  
+                    }
+                    Catch {
+                        Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                }   
                 New-UDButton -Text "Close" -OnClick {
                     Hide-UDModal
                 }                         
