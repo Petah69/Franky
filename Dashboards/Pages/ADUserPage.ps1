@@ -380,6 +380,8 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.Givenname) $($ADUser.Surname)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "Givenname" -Currentvalue $ADUser.Givenname -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+                                                Edit-ADUserInfo -ParamToChange "Surname" -Currentvalue $ADUser.Surname -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Mail"
@@ -442,6 +444,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.POBOX)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "POBOX" -Currentvalue $ADUser.POBOX -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "State"
@@ -450,6 +453,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.State)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "State" -Currentvalue $ADUser.State -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "City"
@@ -458,6 +462,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.city)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "City" -Currentvalue $ADUser.City -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Postal code"
@@ -466,6 +471,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.PostalCode)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "PostalCode" -Currentvalue $ADUser.PostalCode -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Country"
@@ -500,6 +506,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.Company)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "Company" -Currentvalue $ADUser.Company -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Title"
@@ -508,6 +515,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.Title)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "Title" -Currentvalue $ADUser.Title -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Division"
@@ -516,6 +524,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.Division)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "Division" -Currentvalue $ADUser.Division -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Department"
@@ -524,12 +533,16 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.Department)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "Department" -Currentvalue $ADUser.Department -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Office"
                                             }
                                             New-UDGrid -Item -Size 6 -Content {
                                                 New-UDTypography -Text "$($ADUser.Office)"
+                                            }
+                                            New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "Office" -Currentvalue $ADUser.Office -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Manager"
@@ -538,10 +551,12 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 $ConvertManager = $(try { $ADuser.Manager | ForEach-Object { $_.Replace("CN=", "").Split(",") | Select-Object -First 1 } } catch { $null })
                                                 if ($null -ne $ConvertManager) {
                                                     $ShowManager = Get-Aduser -Identity $ConvertManager -Properties Surname, GivenName
-                                                    New-UDTypography -Text "$($ShowManager.GivenName + " " + $ShowManager.Surname + " " + $($ConvertManager))"
+                                                    New-UDTypography -Text "$($ShowManager.GivenName + " " + $ShowManager.Surname + " " + "($($ConvertManager))")"
                                                 }
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                $ConvertManager = $(try { $ADuser.Manager | ForEach-Object { $_.Replace("CN=", "").Split(",") | Select-Object -First 1 } } catch { $null })
+                                                Edit-ADUserInfo -ParamToChange "Manager" -Currentvalue $ConvertManager -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                         }
                                     } -Collapse -CollapseHeight 100 -Timeout 1000

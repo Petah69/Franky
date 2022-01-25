@@ -775,6 +775,42 @@ function Edit-ADUserInfo {
                                 StreetAddress {
                                     Set-ADUser -Identity $($UserName) -StreetAddress $NewParam
                                 }
+                                POBOX {
+                                    Set-ADUser -Identity $($UserName) -POBOX $NewParam
+                                }
+                                State {
+                                    Set-ADUser -Identity $($UserName) -State $NewParam
+                                }
+                                City {
+                                    Set-ADUser -Identity $($UserName) -City $NewParam
+                                }
+                                PostalCode {
+                                    Set-ADUser -Identity $($UserName) -PostalCode $NewParam
+                                }
+                                Givenname {
+                                    Set-ADUser -Identity $($UserName) -Givenname $NewParam
+                                }
+                                Surname {
+                                    Set-ADUser -Identity $($UserName) -Surname $NewParam
+                                }
+                                Company {
+                                    Set-ADUser -Identity $($UserName) -Company $NewParam
+                                }
+                                Title {
+                                    Set-ADUser -Identity $($UserName) -Title $NewParam
+                                }
+                                Division {
+                                    Set-ADUser -Identity $($UserName) -Division $NewParam
+                                }
+                                Department {
+                                    Set-ADUser -Identity $($UserName) -Department $NewParam
+                                }
+                                Office {
+                                    Set-ADUser -Identity $($UserName) -Office $NewParam
+                                }
+                                Manager {
+                                    Set-ADUser -Identity $($UserName) -Manager $NewParam  
+                                }
                             }
                             Show-UDToast -Message "$($ParamToChange) has changed to $($NewParam) for $($UserName)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                             if ($ActiveEventLog -eq "True") {
