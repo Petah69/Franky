@@ -1,4 +1,21 @@
-﻿New-UDGrid -Spacing '1' -Container -Content {
+﻿<#
+    Copyright (C) 2022  KeepCodeOpen - The ultimate IT-Support dashboard
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#>
+
+New-UDGrid -Spacing '1' -Container -Content {
     New-UDGrid -Item -Size 1 -Content { }
     New-UDGrid -Item -Size 10 -Content {
         New-UDGrid -Spacing '1' -Container -Content {
@@ -79,7 +96,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                 Write-EventLog -LogName $EventLogName -Source "UserSearch" -EventID 10 -EntryType Information -Message "$($User) did search for $($SearchUserName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
                             }                  
                             New-UDDynamic -Id 'UserSearch' -content {
-                                $ADuser = Get-ADUser -Filter "samaccountname -eq '$($SearchUserName)'" -Properties pwdLastSet, CannotChangePassword, Description, CN, DisplayName, UserPrincipalName, MobilePhone, OfficePhone, Company, Department, Title, City, Division, Office, lockedout, passwordexpired, AccountExpirationDate, UserPrincipalName, Enabled, Passwordneverexpires, whenCreated, HomeDrive, HomeDirectory, Manager, Surname, Givenname, emailaddress, HomePhone, StreetAddress, State, postalcode, pobox, fax, SID, PrimaryGroup, OfficePhone, Country, ProfilePath, ScriptPath, DistinguishedName
+                                $ADuser = Get-ADUser -Filter "samaccountname -eq '$($SearchUserName)'" -Properties pwdLastSet, CannotChangePassword, Description, CN, DisplayName, UserPrincipalName, MobilePhone, OfficePhone, Company, Department, Title, City, Division, Office, lockedout, passwordexpired, AccountExpirationDate, UserPrincipalName, Enabled, Passwordneverexpires, whenCreated, HomeDrive, HomeDirectory, Manager, Surname, Givenname, emailaddress, HomePhone, StreetAddress, State, postalcode, pobox, fax, SID, PrimaryGroup, OfficePhone, Country, ProfilePath, ScriptPath, DistinguishedName, co
                                 $CollectPwdexpdate = (Get-ADUser -Filter "samaccountname -eq '$($SearchUserName)'" -Properties msDS-UserPasswordExpiryTimeComputed).'msDS-UserPasswordExpiryTimeComputed'
                                 New-UDGrid -Item -Size 12 -Content {
                                     Show-WhatUserManage -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -UserName $SearchUserName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
@@ -370,6 +387,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.EmailAddress)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "EmailAddress" -UserName $SearchUserName -Currentvalue $ADUser.EmailAddress -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Home Phone"
@@ -378,6 +396,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.HomePhone)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "HomePhone" -UserName $SearchUserName -Currentvalue $ADUser.homephone -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Mobile Phone"
@@ -386,6 +405,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.MobilePhone)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "MobilePhone" -UserName $SearchUserName -Currentvalue $ADUser.mobilephone -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Office phone"
@@ -394,6 +414,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.OfficePhone)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "OfficePhone" -UserName $SearchUserName -Currentvalue $ADUser.officephone -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Fax"
@@ -402,6 +423,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.FAX)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "FAX" -UserName $SearchUserName -Currentvalue $ADUser.fax -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "Street Address"
@@ -410,6 +432,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "$($ADUser.StreetAddress)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
+                                                Edit-ADUserInfo -ParamToChange "StreetAddress" -Currentvalue $ADUser.StreetAddress -UserName $SearchUserName -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                             }
                                             New-UDGrid -Item -Size 4 -Content {
                                                 New-UDTypography -Text "PO box"
@@ -447,7 +470,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                 New-UDTypography -Text "Country"
                                             }
                                             New-UDGrid -Item -Size 6 -Content {
-                                                New-UDTypography -Text "$($ADUser.Country)"
+                                                New-UDTypography -Text "$($ADUser.co)"
                                             }
                                             New-UDGrid -Item -Size 2 -Content {
                                             }

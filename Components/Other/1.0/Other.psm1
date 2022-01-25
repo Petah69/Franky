@@ -1,4 +1,21 @@
-﻿function ConvertTo-ByteString {
+﻿<#
+    Copyright (C) 2022  KeepCodeOpen - The ultimate IT-Support dashboard
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#>
+
+function ConvertTo-ByteString {
     [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline = $true)]
@@ -17,13 +34,12 @@
         return ([Math]::Sign($byteCount) * $num).ToString() + $suf[$place]
     }
 }
-function New-RndPassword
-{
+function New-RndPassword {
     [CmdletBinding()]
     param(
-        [ValidateRange(8,30)]
+        [ValidateRange(8, 30)]
         [int]$Length = 10,
-        [ValidateRange(1,7)]
+        [ValidateRange(1, 7)]
         [int]$SpecialCharacters = 1
     )
 
@@ -42,4 +58,4 @@ function New-RndPassword
     $outputString = -join $scrambledStringArray
     return $outputString 
 }
-Export-ModuleMember -Function "ConvertTo-ByteString","New-RndPassword"
+Export-ModuleMember -Function "ConvertTo-ByteString", "New-RndPassword"

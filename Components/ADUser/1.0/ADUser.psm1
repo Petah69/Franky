@@ -1,4 +1,21 @@
-﻿function Unlock-ADUserAccountBtn {
+﻿<#
+    Copyright (C) 2022  KeepCodeOpen - The ultimate IT-Support dashboard
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#>
+
+function Unlock-ADUserAccountBtn {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory)][bool]$ActiveEventLog,
@@ -709,6 +726,78 @@ function Show-WhatUserManage {
     }
 }
 
+function Edit-ADUserInfo {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)][bool]$ActiveEventLog,
+        [Parameter(Mandatory)][string]$UserName,
+        [Parameter(Mandatory)][string]$ParamToChange,
+        [Parameter(Mandatory = $false)][string]$CurrentValue,
+        [Parameter(Mandatory = $false)][string]$EventLogName,
+        [Parameter(Mandatory = $false)][string]$RefreshOnClose,
+        [Parameter(Mandatory = $false)][string]$User,
+        [Parameter(Mandatory = $false)][string]$LocalIpAddress,
+        [Parameter(Mandatory = $false)][string]$RemoteIpAddress
+    )
+
+    New-UDTooltip -TooltipContent {
+        New-UDTypography -Text "Change $($ParamToChange) for $($UserName)"
+    } -content { 
+        New-UDButton -Icon (New-UDIcon -Icon pencil_square) -size small -Onclick {
+            Show-UDModal -Header { "Change $($ParamToChange) for $($UserName)" } -Content {
+                New-UDTextbox -Id "txtChange" -Label "$($ParamToChange)" -Value $CurrentValue -FullWidth
+            } -Footer {
+                New-UDButton -Text "Save" -OnClick {
+                    $NewParam = (Get-UDElement -Id "txtChange").value
+                    if ([string]::IsNullOrEmpty($NewParam)) {
+                        Show-UDToast -Message "You must write something in the field above!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                    else {
+                        try {
+                            switch ($ParamToChange) {
+                                EmailAddress {
+                                    Set-ADUser -Identity $($UserName) -EmailAddress $NewParam
+                                }
+                                HomePhone {
+                                    Set-ADUser -Identity $($UserName) -HomePhone $NewParam
+                                }
+                                MobilePhone {
+                                    Set-ADUser -Identity $($UserName) -MobilePhone $NewParam
+                                }
+                                OfficePhone {
+                                    Set-ADUser -Identity $($UserName) -OfficePhone $NewParam
+                                }
+                                FAX {
+                                    Set-ADUser -Identity $($UserName) -FAX $NewParam
+                                }
+                                StreetAddress {
+                                    Set-ADUser -Identity $($UserName) -StreetAddress $NewParam
+                                }
+                            }
+                            Show-UDToast -Message "$($ParamToChange) has changed to $($NewParam) for $($UserName)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            if ($ActiveEventLog -eq "True") {
+                                Write-EventLog -LogName $EventLogName -Source "ChangeUser$($ParamToChange)" -EventID 10 -EntryType Information -Message "$($User) did change $($ParamToChange) to $($NewParam) for $($UserName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                            }
+                            if ($NULL -ne $RefreshOnClose) {
+                                Sync-UDElement -Id $RefreshOnClose
+                            }
+                            Hide-UDModal  
+                        }
+                        Catch {
+                            Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            Break
+                        }
+                    }
+                }
+                New-UDButton -Text "Close" -OnClick {
+                    Hide-UDModal
+                }                         
+            } -FullWidth -MaxWidth 'sm' -Persistent
+        }
+    }
+}
 
 
-Export-ModuleMember -Function "Show-WhatUserManage", "Set-UserChangePasswordNextLogin", "Set-UserChangePasswordBtn", "Set-UserPasswordExpiresBtn", "Unlock-ADUserAccountBtn", "New-PasswordADUserBtn", "New-ADAccountExpirationDateBtn", "Compare-ADUserGroupsBtn", "Add-MultiUsers"
+
+Export-ModuleMember -Function "Edit-ADUserInfo", "Show-WhatUserManage", "Set-UserChangePasswordNextLogin", "Set-UserChangePasswordBtn", "Set-UserPasswordExpiresBtn", "Unlock-ADUserAccountBtn", "New-PasswordADUserBtn", "New-ADAccountExpirationDateBtn", "Compare-ADUserGroupsBtn", "Add-MultiUsers"
