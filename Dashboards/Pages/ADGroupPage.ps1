@@ -211,8 +211,8 @@ New-UDGrid -Spacing '1' -Container -Content {
                                     }
                                 }
                                 New-UDGrid -Item -Size 2 -Content {
-                                    Edit-ManagedByBtn -ObjectType "Group" -ObjectName $GroupName -RefreshOnClose "GroupSearch" -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
-                                    Remove-ManagedByUser -CurrentManagedBy $GroupManagedBy -ObjectType "Group" -ObjectName $GroupName -RefreshOnClose "GroupSearch" -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+                                    $GroupManagedBy = $(try { $SearchADGroup.ManagedBy | ForEach-Object { $_.Replace("CN=", "").Split(",") | Select-Object -First 1 } } catch { $null })
+                                    Edit-ManagedByBtn -CurrentValue $GroupManagedBy -ObjectType "Group" -ObjectName $GroupName -RefreshOnClose "GroupSearch" -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                 }
                                 New-UDGrid -Item -Size 12 -Content {
                                     New-UDHTML -Markup "</br>"

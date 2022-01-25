@@ -216,8 +216,8 @@ New-UDGrid -Spacing '1' -Container -Content {
                                     }
                                 }
                                 New-UDGrid -Item -Size 2 -Content {
-                                    Edit-ManagedByBtn -ObjectType "Computer" -ObjectName $ComputerName -RefreshOnClose "ComputerSearch" -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
-                                    Remove-ManagedByUser -CurrentManagedBy $ComputerManagedBy -ObjectType "Computer" -ObjectName $ComputerName -RefreshOnClose "ComputerSearch" -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+                                    $ComputerManagedBy = $(try { $SearchADComputer.ManagedBy | ForEach-Object { $_.Replace("CN=", "").Split(",") | Select-Object -First 1 } } catch { $null })
+                                    Edit-ManagedByBtn -CurrentValue $ComputerManagedBy -ObjectType "Computer" -ObjectName $ComputerName -RefreshOnClose "ComputerSearch" -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                 }
                                 New-UDGrid -Item -Size 4 -Content {
                                     New-UDTypography -Text "Object was created"

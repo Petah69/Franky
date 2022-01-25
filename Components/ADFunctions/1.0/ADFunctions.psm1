@@ -130,7 +130,7 @@ function Edit-MailBtn {
                                 Set-ADUser -Identity $ChangeObjectName -EmailAddress $NewMail
                             }
                             Group {
-                                Set-ADGroup -Identity $ChangeObjectName -Replace @{mail = "$NewMail" }
+                                Set-ADGroup -Identity $ChangeObjectName -Replace @{mail = "$($NewMail)" }
                             }
                             Computer {
                                 Set-ADComputer -Identity $ChangeObjectName -EmailAddress $NewMail
@@ -139,6 +139,33 @@ function Edit-MailBtn {
                         Show-UDToast -Message "The mail for $($ChangeObjectName) has been changed to $($NewMail)!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                         if ($ActiveEventLog -eq "True") {
                             Write-EventLog -LogName $EventLogName -Source "Change$($ChangeMailObject)Mail" -EventID 10 -EntryType Information -Message "$($User) did change the mail for $($ChangeObjectName) to $($NewMail)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                        }
+                        if ($NULL -ne $RefreshOnClose) {
+                            Sync-UDElement -Id $RefreshOnClose
+                        }
+                        Hide-UDModal
+                    }
+                    catch {
+                        Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                }
+                New-UDButton -Text "Clear" -OnClick {
+                    try {
+                        switch ($ChangeMailObject) {
+                            User {
+                                Set-ADUser -Identity $ChangeObjectName -EmailAddress $Null
+                            }
+                            Group {
+                                Set-ADGroup -Identity $ChangeObjectName -Replace @{mail = "$($Null)" }
+                            }
+                            Computer {
+                                Set-ADComputer -Identity $ChangeObjectName -EmailAddress $Null
+                            }
+                        }
+                        Show-UDToast -Message "The mail for $($ChangeObjectName) has now been cleared!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        if ($ActiveEventLog -eq "True") {
+                            Write-EventLog -LogName $EventLogName -Source "Clear$($ChangeMailObject)Mail" -EventID 10 -EntryType Information -Message "$($User) did clear the mail for $($ChangeObjectName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
                         }
                         if ($NULL -ne $RefreshOnClose) {
                             Sync-UDElement -Id $RefreshOnClose
@@ -417,6 +444,7 @@ function Edit-ManagedByBtn {
         [Parameter(Mandatory)][bool]$ActiveEventLog,
         [Parameter(Mandatory)][string]$ObjectName,
         [Parameter(Mandatory)][string]$ObjectType,
+        [Parameter(Mandatory = $false)][string]$CurrentValue,
         [Parameter(Mandatory = $false)][string]$EventLogName,
         [Parameter(Mandatory = $false)][string]$RefreshOnClose,
         [Parameter(Mandatory = $false)][string]$User,
@@ -431,7 +459,7 @@ function Edit-ManagedByBtn {
             Show-UDModal -Header { "Change manage by for $($ObjectName)" } -Content {
                 New-UDGrid -Spacing '1' -Container -Content {
                     New-UDGrid -Item -Size 12 -Content {
-                        New-UDTextbox -Id "txtChangeManagedBy" -Label "Enter username for manage by" -FullWidth
+                        New-UDTextbox -Id "txtChangeManagedBy" -Label "Enter username for manage by" -Value $CurrentValue -FullWidth
                     }
                 }
             } -Footer {
@@ -463,6 +491,28 @@ function Edit-ManagedByBtn {
                     }
                     else {
                         Show-UDToast -Message "$($ManagedByNew) are not a member in the AD!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                }
+                New-UDButton -Text "Clear" -OnClick {
+                    try {
+                        if ($ObjectType -eq "Group") {
+                            Set-ADGroup -Identity $ObjectName -Managedby $null
+                        }
+                        elseif ($ObjectType -eq "Computer") {
+                            Set-ADComputer -Identity $ObjectName -Managedby $null
+                        }
+                        if ($ActiveEventLog -eq "True") {
+                            Write-EventLog -LogName $EventLogName -Source "Clear$($ObjectType)ManagedBy" -EventID 10 -EntryType Information -Message "$($User) did clear managedby for $($ObjectName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                        }
+                        if ($null -ne $RefreshOnClose) {
+                            Sync-UDElement -Id $RefreshOnClose
+                        }
+                        Show-UDToast -Message "Managed by for $($ObjectName) are now cleared!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Hide-UDModal
+                    }
+                    catch {
+                        Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                         Break
                     }
                 }
@@ -562,66 +612,4 @@ function Get-ADLastSeen {
     ($LogonDates | Sort-Object -Property LastLogon -Descending | Select-Object -First 1).LastLogon
 }
 
-function Remove-ManagedByUser {
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory)][bool]$ActiveEventLog,
-        [Parameter(Mandatory)][string]$ObjectName,
-        [Parameter(Mandatory)][string]$ObjectType,
-        [Parameter(Mandatory = $false)][string]$CurrentManagedBy,
-        [Parameter(Mandatory = $false)][string]$EventLogName,
-        [Parameter(Mandatory = $false)][string]$RefreshOnClose,
-        [Parameter(Mandatory = $false)][string]$User,
-        [Parameter(Mandatory = $false)][string]$LocalIpAddress,
-        [Parameter(Mandatory = $false)][string]$RemoteIpAddress
-    )
-    New-UDTooltip -TooltipContent {
-        New-UDTypography -Text "Remove managed by for $($ObjectName)"
-    } -content { 
-        New-UDButton -Icon (New-UDIcon -Icon trash_alt) -size small -Onclick { 
-            if ([string]::IsNullOrEmpty($pw1) -or [string]::IsNullOrEmpty($CurrentManagedBy)) {
-                Show-UDToast -Message "It's nothing to remove as no one are managing this object!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                Break
-            }
-            Show-UDModal -Header { "Remove manage by from $($ObjectName)" } -Content {
-                New-UDGrid -Spacing '1' -Container -Content {
-                    New-UDGrid -Item -Size 1 -Content { }
-                    New-UDGrid -Item -Size 10 -Content {
-                        New-UDTypography -Text "Are you sure that you want to remove $($CurrentManagedBy) as managed by from $($ObjectName)?"
-                    }
-                    New-UDGrid -Item -Size 1 -Content { }
-                }
-            } -Footer {
-                New-UDButton -Text "Yes" -Size medium -OnClick {
-                    try {
-                        switch ($ObjectType) {
-                            Computer {
-                                Set-ADComputer -Identity $ObjectName -Clear Managedby
-                            }
-                            Group {
-                                Set-ADGroup -Identity $ObjectName -Clear Managedby
-                            }
-                        }
-                        Show-UDToast -Message "Manage by are now removed from $($ObjectName)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                        if ($ActiveEventLog -eq "True") {
-                            Write-EventLog -LogName $EventLogName -Source "RemovedManageByFrom$($ObjectType)" -EventID 10 -EntryType Information -Message "$($User) removed $($CurrentManagedBy) as managed by from $($ObjectName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
-                        }
-                        if ($null -ne $RefreshOnClose) {
-                            Sync-UDElement -Id $RefreshOnClose
-                        }
-                        Hide-UDModal
-                    }
-                    catch {
-                        Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                        Break
-                    }
-                }
-                New-UDButton -Text "No" -Size medium -OnClick {
-                    Hide-UDModal
-                }
-            } -FullWidth -MaxWidth 'xs' -Persistent
-        }
-    }
-}
-
-Export-ModuleMember -Function "Remove-ManagedByUser", "Edit-ManagedByBtn", "Edit-DescriptionBtn", "Edit-MailBtn", "Move-ADObjectBtn", "Rename-ADObjectBtn", "Set-EnableDisableADAccountBtn", "Remove-ADObjectBtn", "Get-ADLastSeen"
+Export-ModuleMember -Function "Edit-ManagedByBtn", "Edit-DescriptionBtn", "Edit-MailBtn", "Move-ADObjectBtn", "Rename-ADObjectBtn", "Set-EnableDisableADAccountBtn", "Remove-ADObjectBtn", "Get-ADLastSeen"

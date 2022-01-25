@@ -232,6 +232,21 @@ function Edit-GroupInfoBtn {
                         Break
                     }
                 }
+                New-UDButton -Text "Clear" -OnClick {
+                    try {
+                        Set-ADGroup -Identity $GroupName  -Replace @{info = "$($null)" }
+                        if ($ActiveEventLog -eq "True") {
+                            Write-EventLog -LogName $EventLogName -Source "ClearGroupInfo" -EventID 10 -EntryType Information -Message "$($User) did clear info on $($GroupName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                        }
+                        Sync-UDElement -Id 'GroupSearch'
+                        Show-UDToast -Message "Info for $($GroupName) has now been cleared!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Hide-UDModal
+                    }
+                    catch {
+                        Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                }
                 New-UDButton -Text "Close" -OnClick {
                     Hide-UDModal
                 }
