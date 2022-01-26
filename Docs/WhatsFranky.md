@@ -1,13 +1,18 @@
-﻿_This documentation are synced from Franky repo, if you want to change something just do a pull request._
-
+﻿_This documentation are synced from Franky repo, if you want to change something just do a pull request._  
+  
+Franky is the ultimate IT-Support/administration dashboard developed for PowerShell Universal and it’s an open source project under GNU General Public Licenses version 3.  
+You can access Franky for any device you want you just need access to a browser. Because of that you can administrate the active directory from any devices you like.  
+  
 # Functions
 ## Generall
-_Under construction_
+* Access Franky from any device, just need a browser
+* Everything the user does logs in Eventlog on the host
+* Load balance Franky on two hosts or more
 
 ## User
 
-In the User page of Franky you can search after active directory users and perform many different actions.
-For example:
+In the User page of Franky you can search after active directory users and perform many different actions.  
+For example:  
 
 * Show and administrate what objects the user are manager of
 * Administrate all of the active directory parameters and functions
@@ -21,8 +26,8 @@ For example:
 
 ## Computer
 
-In the computer page of Franky you can search after active directory computers and perform many different actions.
-For example:
+In the computer page of Franky you can search after active directory computers and perform many different actions.  
+For example:  
 
 * See information about the computer from active directory, OS information, Hardware information
 * Administrate all of the active directory parameters and functions
@@ -44,8 +49,8 @@ For example:
 
 ## Groups
 
-In the group page of Franky you can search after active directory groups and perform many different actions.
-For example:
+In the group page of Franky you can search after active directory groups and perform many different actions.  
+For example:  
 
 * Show and administrate what groups the group are member of aka. nested
 * Administrate all of the active directory parameters and functions
