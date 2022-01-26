@@ -2,9 +2,9 @@
 For example:
 
 * Show and administrate what objects the user are manager of
-* Change password for the user
+* Administrate all of the active directory parameters and functions
 * Compare users groups against an other user
 * Delete the user
-* Change all of the user parameters
+* See and administrate what groups the computer are member of
 * Change all of the user settings like: Enable/disable the account, password experation date etc.
 * And much more...
