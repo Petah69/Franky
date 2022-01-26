@@ -203,7 +203,9 @@ New-UDGrid -Spacing '1' -Container -Content {
                                         New-UDTypography -Text "Missing profile path"
                                     }
                                 }
-                                New-UDGrid -Item -Size 2 -Content { }
+                                New-UDGrid -Item -Size 2 -Content {
+                                    Edit-ADUserInfo -ParamToChange "ProfilePath" -UserName $SearchUserName -Currentvalue $ADUser.ProfilePath -RefreshOnClose "UserSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+                                }
                                 New-UDGrid -Item -Size 4 -Content {
                                     New-UDTypography -Text "Script path"
                                 }
