@@ -1,3 +1,5 @@
+_This documentation are synced from Franky repo, if you want to change something just do a pull request._
+
 # Setup host
 1. Install PowerShell Universal version 2.7 or later
     - https://ironmansoftware.com/downloads
