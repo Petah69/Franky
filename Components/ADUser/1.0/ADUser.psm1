@@ -811,6 +811,9 @@ function Edit-ADUserInfo {
                                 Manager {
                                     Set-ADUser -Identity $($UserName) -Manager $NewParam  
                                 }
+                                ProfilePath {
+                                    Set-ADUser -Identity $($UserName) -ProfilePath $NewParam
+                                }
                             }
                             Show-UDToast -Message "$($ParamToChange) has changed to $($NewParam) for $($UserName)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                             if ($ActiveEventLog -eq "True") {
@@ -883,6 +886,9 @@ function Edit-ADUserInfo {
                             }
                             Manager {
                                 Set-ADUser -Identity $($UserName) -Manager $Null  
+                            }
+                            ProfilePath {
+                                Set-ADUser -Identity $($UserName) -ProfilePath $null
                             }
                         }
                         Show-UDToast -Message "$($ParamToChange) has now been cleared for $($UserName)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
