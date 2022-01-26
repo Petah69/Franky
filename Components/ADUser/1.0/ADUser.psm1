@@ -814,6 +814,15 @@ function Edit-ADUserInfo {
                                 ProfilePath {
                                     Set-ADUser -Identity $($UserName) -ProfilePath $NewParam
                                 }
+                                ScriptPath {
+                                    Set-ADUser -Identity $($UserName) -ScriptPath $NewParam
+                                }
+                                HomeDirectory {
+                                    Set-ADUser -Identity $($UserName) -HomeDirectory $NewParam
+                                }
+                                HomeDrive {
+                                    Set-ADUser -Identity $($UserName) -HomeDrive $NewParam
+                                }
                             }
                             Show-UDToast -Message "$($ParamToChange) has changed to $($NewParam) for $($UserName)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                             if ($ActiveEventLog -eq "True") {
@@ -889,6 +898,15 @@ function Edit-ADUserInfo {
                             }
                             ProfilePath {
                                 Set-ADUser -Identity $($UserName) -ProfilePath $null
+                            }
+                            ScriptPath {
+                                Set-ADUser -Identity $($UserName) -ScriptPath $null
+                            }
+                            HomeDirectory {
+                                Set-ADUser -Identity $($UserName) -HomeDirectory $null
+                            }
+                            HomeDrive {
+                                Set-ADUser -Identity $($UserName) -HomeDrive $Null
                             }
                         }
                         Show-UDToast -Message "$($ParamToChange) has now been cleared for $($UserName)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
