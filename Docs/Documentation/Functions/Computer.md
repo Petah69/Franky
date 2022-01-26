@@ -14,4 +14,7 @@ For example:
 * Delete the computer from the active directory
 * See installed softwares and drivers
 * Cleaning functions that delete temp files etc.
+* Create new computer object
+* Delete the computer object
+* Export information to PDF or XLSX files
 * and much more...
