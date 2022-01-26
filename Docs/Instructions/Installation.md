@@ -22,7 +22,7 @@ _This documentation are synced from Franky repo, if you want to change something
     - https://www.keepcodeopen.com/download-franky/
 7. When that's done restart the PowerShell Universal service.
 
-# Change settings in .ps1 files
+# Create active directory groups
 Before we begin with this it's some simple steps you need to do.
 1. Create an AD group where you can add all role groups (nesting) that should have access to Franky for example "Franky.Access"
 2. Create an AD group that are named "Franky" that group will give all members of it access to the Franky role.
@@ -31,6 +31,7 @@ Before we begin with this it's some simple steps you need to do.
 5. Add all of the groups that you created in 4. and also the Franky group to the group Franky.Access
 5. Add the user that you want to use to administrate PowerShell Universal to PSU.Administrator and Franky group.
 
+# Change in the .ps1 settings files for PowerShell Universal
 ## authentication.ps1
 1. At row 9 Change $CurrentDomain to your own LDAP path for example; "LDAP://DC=FR,DC=SE"
 2. At row 23 you should change the 'xxx' to the ID for your own access group that can access PSU. In this example it's the Franky.Access group that you created earlier.
