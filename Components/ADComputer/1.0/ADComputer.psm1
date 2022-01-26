@@ -750,8 +750,8 @@ function Remove-UserProfilesBtn {
                             $ProfileInfo = Invoke-Command -ComputerName $Computer { Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$using:SID" }
     
                             If ($null -ne $ProfileInfo.LocalProfileUnloadTimeHigh) {
-                                $PUHigh = '{ 0:x }' -f $ProfileInfo.LocalProfileUnloadTimeHigh
-                                $PULow = '{ 0:x }' -f $ProfileInfo.LocalProfileUnloadTimeLow
+                                $PUHigh = '{0:x}' -f $ProfileInfo.LocalProfileUnloadTimeHigh
+                                $PULow = '{0:x}' -f $ProfileInfo.LocalProfileUnloadTimeLow
                                 $PUcomb = -join ('0x', $PUHigh, $PULow)
                                 $ProfileUsed = [datetime]::FromFileTime([uint64]$PUcomb)                    
  
@@ -1469,52 +1469,87 @@ Function Remove-EdgeSettings {
     } -content { 
         New-UDButton -Icon (New-UDIcon -Icon edge) -size medium -Onclick {
             $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName $Computer | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
-
             Show-UDModal -Header { "Delete Edge settings on $($Computer)" } -Content {
-                New-UDGrid -Spacing '1' -Container -Content {
-                    New-UDGrid -Item -Size 1 -Content { }
-                    New-UDGrid -Item -Size 10 -Content {
-                        New-UDSelect -Id 'EdgeUser' -Option {
-                            New-UDSelectOption -Name 'Select user...' -Value 1
-                            foreach ($user in $profiles) {
-                                New-UDSelectOption -Name $user -Value $user
+                New-UDDynamic -Id 'EdgeStart' -content {
+                    New-UDGrid -Spacing '1' -Container -Content {
+                        New-UDGrid -Item -Size 1 -Content { }
+                        New-UDGrid -Item -Size 10 -Content {
+                            New-UDSelect -Id 'EdgeUser' -Option {
+                                New-UDSelectOption -Name 'Select user...' -Value 1
+                                foreach ($user in $profiles) {
+                                    New-UDSelectOption -Name $user -Value $user
+                                }
                             }
                         }
+                        New-UDGrid -Item -Size 1 -Content { }
                     }
-                    New-UDGrid -Item -Size 1 -Content { }
+                } -LoadingComponent {
+                    New-UDProgress -Circular
                 }
             } -Footer {
                 New-UDButton -Text "Delete" -OnClick { 
                     $UserToClean = Get-UDElement -Id 'EdgeUser'
-                    try {
-                        Invoke-Command -ComputerName $Computer -Scriptblock {
-                            Param($UserToClean)
-                            $edgestatus = $(try { Get-Process -Name msedge -ErrorAction stop } catch { $Null })
-                            $msedgepath = "C:\Users\$($UserToClean)\AppData\Local\Microsoft\Edge\User Data\"
-
-                            if ($Null -ne $edgestatus) {
-                                Stop-Process -Id msedge -Force
-                            }
-
-                            if (Test-Path -Path $msedgepath) {
-                                Remove-Item $msedgepath -Recurse -Force
-                            }
-                        } -ArgumentList $UserToClean
-
-                        Show-UDToast -Message "Edge settings for $($UserToClean) on $($Computer) has now been deleted!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                        if ($ActiveEventLog -eq "True") {
-                            Write-EventLog -LogName $EventLogName -Source "DeleteEdgeSettings" -EventID 10 -EntryType Information -Message "$($User) deleted Edge settings on $($Computer) for $($UserToClean)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
-                        }
-                        Hide-UDModal
-                    }
-                    catch {
-                        Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                    $UserToClean = $UserToClean.value
+                    if ([string]::IsNullOrEmpty($UserToClean) -or $UserToClean -eq 1) {
+                        Show-UDToast -Message "You need to select a user!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                         Break
                     }
-                }
+                    else {
+                        try {
+                            Set-UDElement -Id "EdgeUser" -Properties @{
+                                Disabled = $true
+                            }
+                            Set-UDElement -Id "DeleteBtn" -Properties @{
+                                Text     = "Deleting..."
+                                Disabled = $true
+                            }
+                           
+                            Set-UDElement -Id "CloseBtn" -Properties @{
+                                Text     = "Deleting..."
+                                Disabled = $true
+                            }
+                            Invoke-Command -ComputerName $Computer -Scriptblock {
+                                Param($UserToClean)
+                                $edgestatus = $(try { Get-Process -Name msedge -ErrorAction stop } catch { $Null })
+                                $msedgepath = "C:\Users\$($UserToClean)\AppData\Local\Microsoft\Edge\User Data\"
+
+                                if ($Null -ne $edgestatus) {
+                                    Stop-Process -Name msedge -Force
+                                }
+
+                                if (Test-Path -Path $msedgepath) {
+                                    Remove-Item $msedgepath -Recurse -Force
+                                }
+                            } -ArgumentList $UserToClean
+
+                            Show-UDToast -Message "Edge settings for $($UserToClean) on $($Computer) has now been deleted!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            if ($ActiveEventLog -eq "True") {
+                                Write-EventLog -LogName $EventLogName -Source "DeleteEdgeSettings" -EventID 10 -EntryType Information -Message "$($User) deleted Edge settings on $($Computer) for $($UserToClean)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                            }
+                            Hide-UDModal
+                            
+                        }
+                        catch {
+                            Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            Break
+                            Set-UDElement -Id "EdgeUser" -Properties @{
+                                Disabled = $false
+                            }
+                            Set-UDElement -Id "DeleteBtn" -Properties @{
+                                Text     = "Delete"
+                                Disabled = $false
+                            }
+                           
+                            Set-UDElement -Id "CloseBtn" -Properties @{
+                                Text     = "Close"
+                                Disabled = $false
+                            }
+                        }
+                    }
+                } -Id "DeleteBtn"
                 New-UDButton -Text "Close" -OnClick {
                     Hide-UDModal
-                }
+                } -id "CloseBtn"
             } -FullWidth -MaxWidth 'xs' -Persistent
         }
     }
