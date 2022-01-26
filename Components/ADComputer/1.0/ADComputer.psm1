@@ -1616,7 +1616,7 @@ Function Remove-ChromeSettings {
                                 Param($UserToClean)
                                 $Chromestatus = $(try { Get-Process -Name chrome -ErrorAction stop } catch { $Null })
                                 $chromepath = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\User Data\"
-                                $chromebookmark = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\Default\Bookmarks"
+                                $chromebookmark = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\User Data\Default\Bookmarks"
 
                                 if ($Null -ne $Chromestatus) {
                                     Stop-Process -Name chrome -Force
