@@ -109,6 +109,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                     Show-MonitorInfoBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Compare-ComputerGrpsBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ComputerName -YourFullDomain $YourFullDomain -RefreshOnClose "ComputerSearchGroupList" -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Remove-UserProfilesBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -YourDomain $YourDomain.ToUpper() -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+                                    Remove-EdgeSettings -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Show-ProcessTableBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Show-ServicesTableBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Show-NetAdpBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
@@ -121,7 +122,6 @@ New-UDGrid -Spacing '1' -Container -Content {
                                         Remove-TempFilesClientBtn -CurrentHost $CurrentHost -AppToken $AppToken -RefreshOnClose "ComputerSearch" -Computer $ConvertToComputerName -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     }
                                     New-RefreshUDElementBtn -RefreshUDElement 'ComputerSearch'
-                                    Remove-EdgeSettings -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                 }
                                 New-UDGrid -Item -Size 12 -Content {
                                     New-UDHTML -Markup "</br>"
