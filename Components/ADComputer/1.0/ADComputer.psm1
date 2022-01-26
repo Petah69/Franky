@@ -1470,21 +1470,17 @@ Function Remove-EdgeSettings {
         New-UDButton -Icon (New-UDIcon -Icon edge) -size medium -Onclick {
             $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName $Computer | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
             Show-UDModal -Header { "Delete Edge settings on $($Computer)" } -Content {
-                New-UDDynamic -Id 'EdgeStart' -content {
-                    New-UDGrid -Spacing '1' -Container -Content {
-                        New-UDGrid -Item -Size 1 -Content { }
-                        New-UDGrid -Item -Size 10 -Content {
-                            New-UDSelect -Id 'EdgeUser' -Option {
-                                New-UDSelectOption -Name 'Select user...' -Value 1
-                                foreach ($user in $profiles) {
-                                    New-UDSelectOption -Name $user -Value $user
-                                }
+                New-UDGrid -Spacing '1' -Container -Content {
+                    New-UDGrid -Item -Size 2 -Content { }
+                    New-UDGrid -Item -Size 8 -Content {
+                        New-UDSelect -Id 'EdgeUser' -Option {
+                            New-UDSelectOption -Name 'Select user...' -Value 1
+                            foreach ($user in $profiles) {
+                                New-UDSelectOption -Name $user -Value $user
                             }
                         }
-                        New-UDGrid -Item -Size 1 -Content { }
                     }
-                } -LoadingComponent {
-                    New-UDProgress -Circular
+                    New-UDGrid -Item -Size 2 -Content { }
                 }
             } -Footer {
                 New-UDButton -Text "Delete" -OnClick { 
@@ -1512,9 +1508,20 @@ Function Remove-EdgeSettings {
                                 Param($UserToClean)
                                 $edgestatus = $(try { Get-Process -Name msedge -ErrorAction stop } catch { $Null })
                                 $msedgepath = "C:\Users\$($UserToClean)\AppData\Local\Microsoft\Edge\User Data\"
+                                $msedgebookmark = "C:\Users\$($UserToClean)\AppData\Local\Microsoft\Edge\User Data\Default\Bookmarks"
 
                                 if ($Null -ne $edgestatus) {
                                     Stop-Process -Name msedge -Force
+                                }
+
+                                if (Test-Path -Path $msedgebookmark -PathType Leaf) {
+                                    if (Test-Path -Path "C:\Temp") {
+                                        Copy-Item $msedgebookmark -Destination "C:\Temp"
+                                    }
+                                    else {
+                                        New-Item -Path "C:\" -Name "Temp" -ItemType "directory" > $Null
+                                        Copy-Item $msedgebookmark -Destination "C:\Temp"
+                                    }
                                 }
 
                                 if (Test-Path -Path $msedgepath) {
@@ -1522,12 +1529,11 @@ Function Remove-EdgeSettings {
                                 }
                             } -ArgumentList $UserToClean
 
-                            Show-UDToast -Message "Edge settings for $($UserToClean) on $($Computer) has now been deleted!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            Show-UDToast -Message "Edge settings for $($UserToClean) on $($Computer) has now been deleted! Bookmarks has been saved in C:\Temp" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                             if ($ActiveEventLog -eq "True") {
                                 Write-EventLog -LogName $EventLogName -Source "DeleteEdgeSettings" -EventID 10 -EntryType Information -Message "$($User) deleted Edge settings on $($Computer) for $($UserToClean)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
                             }
                             Hide-UDModal
-                            
                         }
                         catch {
                             Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
@@ -1555,4 +1561,112 @@ Function Remove-EdgeSettings {
     }
 }
 
-Export-ModuleMember -Function "Remove-EdgeSettings", "Ping-ADComputer", "Disconnect-UserFromComputer", "Restart-ADComputer", "Show-MonitorInfoBtn", "Show-InstalledDriversBtn", "Get-SysInfo", "Show-NetAdpBtn", "Show-ProcessTableBtn", "Show-InstalledSoftwareBtn", "Show-AutostartTableBtn", "Show-ServicesTableBtn", "Remove-UserProfilesBtn", "Compare-ComputerGrpsBtn", "Show-SchedualTaskTableBtn", "Remove-TempFilesClientBtn"
+Function Remove-ChromeSettings {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)][bool]$ActiveEventLog,
+        [Parameter(Mandatory)][string]$Computer,
+        [Parameter(Mandatory = $false)][string]$EventLogName,
+        [Parameter(Mandatory = $false)][string]$User,
+        [Parameter(Mandatory = $false)][string]$LocalIpAddress,
+        [Parameter(Mandatory = $false)][string]$RemoteIpAddress
+    )
+
+    New-UDTooltip -TooltipContent {
+        New-UDTypography -Text "Delete Chrome settings on $($Computer)"
+    } -content { 
+        New-UDButton -Icon (New-UDIcon -Icon chrome) -size medium -Onclick {
+            $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName $Computer | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
+            Show-UDModal -Header { "Delete Chrome settings on $($Computer)" } -Content {
+                New-UDGrid -Spacing '1' -Container -Content {
+                    New-UDGrid -Item -Size 2 -Content { }
+                    New-UDGrid -Item -Size 8 -Content {
+                        New-UDSelect -Id 'ChromeUser' -Option {
+                            New-UDSelectOption -Name 'Select user...' -Value 1
+                            foreach ($user in $profiles) {
+                                New-UDSelectOption -Name $user -Value $user
+                            }
+                        }
+                    }
+                    New-UDGrid -Item -Size 2 -Content { }
+                }
+            } -Footer {
+                New-UDButton -Text "Delete" -OnClick { 
+                    $UserToClean = Get-UDElement -Id 'ChromeUser'
+                    $UserToClean = $UserToClean.value
+                    if ([string]::IsNullOrEmpty($UserToClean) -or $UserToClean -eq 1) {
+                        Show-UDToast -Message "You need to select a user!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                    else {
+                        try {
+                            Set-UDElement -Id "ChromeUser" -Properties @{
+                                Disabled = $true
+                            }
+                            Set-UDElement -Id "DeleteBtn" -Properties @{
+                                Text     = "Deleting..."
+                                Disabled = $true
+                            }
+                           
+                            Set-UDElement -Id "CloseBtn" -Properties @{
+                                Text     = "Deleting..."
+                                Disabled = $true
+                            }
+                            Invoke-Command -ComputerName $Computer -Scriptblock {
+                                Param($UserToClean)
+                                $Chromestatus = $(try { Get-Process -Name chrome -ErrorAction stop } catch { $Null })
+                                $chromepath = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\User Data\"
+                                $chromebookmark = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\Default\Bookmarks"
+
+                                if ($Null -ne $Chromestatus) {
+                                    Stop-Process -Name chrome -Force
+                                }
+
+                                if (Test-Path -Path $chromebookmark -PathType Leaf) {
+                                    if (Test-Path -Path "C:\Temp") {
+                                        Copy-Item $chromebookmark -Destination "C:\Temp"
+                                    }
+                                    else {
+                                        New-Item -Path "C:\" -Name "Temp" -ItemType "directory" > $Null
+                                        Copy-Item $chromebookmark -Destination "C:\Temp"
+                                    }
+                                }
+
+                                if (Test-Path -Path $chromepath) {
+                                    Remove-Item $chromepath -Recurse -Force
+                                }
+                            } -ArgumentList $UserToClean
+
+                            Show-UDToast -Message "Chrome settings for $($UserToClean) on $($Computer) has now been deleted! Bookmarks has been saved in C:\Temp" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            if ($ActiveEventLog -eq "True") {
+                                Write-EventLog -LogName $EventLogName -Source "DeleteChromeSettings" -EventID 10 -EntryType Information -Message "$($User) deleted Chrome settings on $($Computer) for $($UserToClean)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                            }
+                            Hide-UDModal
+                        }
+                        catch {
+                            Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            Break
+                            Set-UDElement -Id "ChromeUser" -Properties @{
+                                Disabled = $false
+                            }
+                            Set-UDElement -Id "DeleteBtn" -Properties @{
+                                Text     = "Delete"
+                                Disabled = $false
+                            }
+                           
+                            Set-UDElement -Id "CloseBtn" -Properties @{
+                                Text     = "Close"
+                                Disabled = $false
+                            }
+                        }
+                    }
+                } -Id "DeleteBtn"
+                New-UDButton -Text "Close" -OnClick {
+                    Hide-UDModal
+                } -id "CloseBtn"
+            } -FullWidth -MaxWidth 'xs' -Persistent
+        }
+    }
+}
+
+Export-ModuleMember -Function "Remove-ChromeSettings", "Remove-EdgeSettings", "Ping-ADComputer", "Disconnect-UserFromComputer", "Restart-ADComputer", "Show-MonitorInfoBtn", "Show-InstalledDriversBtn", "Get-SysInfo", "Show-NetAdpBtn", "Show-ProcessTableBtn", "Show-InstalledSoftwareBtn", "Show-AutostartTableBtn", "Show-ServicesTableBtn", "Remove-UserProfilesBtn", "Compare-ComputerGrpsBtn", "Show-SchedualTaskTableBtn", "Remove-TempFilesClientBtn"
