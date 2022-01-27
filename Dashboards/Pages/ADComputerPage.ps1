@@ -133,7 +133,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                     } -content { 
                                         New-UDButton -Text "Open" -size small -Onclick {
                                             $UserImpactMenu = Get-UDElement -Id 'UserImpact'
-                                            if ([string]::IsNullOrEmpty($UserImpactMenu.value) -or $UserImpactMenu -eq 1) {
+                                            if ([string]::IsNullOrEmpty($UserImpactMenu.value) -or $UserImpactMenu.value -eq 1) {
                                                 Show-UDToast -Message "You need to select an option!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                                                 Break
                                             }
