@@ -103,14 +103,10 @@ New-UDGrid -Spacing '1' -Container -Content {
                                 }
                                 $SearchADComputer = Get-ADComputer -Filter "samaccountname -eq '$($ComputerName)$'"  -Properties CN, DisplayName, DNSHostName, OperatingSystem, Description, CanonicalName, DistinguishedName, Created, SamAccountName, OperatingSystemVersion, whenChanged, SID, IPv4Address, IPv6Address, PrimaryGroup, ManagedBy, Location, Enabled, LastLogonDate
                                 New-UDGrid -Item -Size 12 -Content {
-                                    Disconnect-UserFromComputer -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Restart-ADComputer -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Ping-ADComputer -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Show-MonitorInfoBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Compare-ComputerGrpsBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ComputerName -YourFullDomain $YourFullDomain -RefreshOnClose "ComputerSearchGroupList" -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
-                                    Remove-UserProfilesBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -YourDomain $YourDomain.ToUpper() -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
-                                    Remove-EdgeSettings -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
-                                    Remove-ChromeSettings  -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Show-ProcessTableBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Show-ServicesTableBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     Show-NetAdpBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
@@ -123,6 +119,42 @@ New-UDGrid -Spacing '1' -Container -Content {
                                         Remove-TempFilesClientBtn -CurrentHost $CurrentHost -AppToken $AppToken -RefreshOnClose "ComputerSearch" -Computer $ConvertToComputerName -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                     }
                                     New-RefreshUDElementBtn -RefreshUDElement 'ComputerSearch'
+                                }
+                                New-UDGrid -Item -Size 12 -Content {
+                                    New-UDSelect -id 'UserImpact' -Option {
+                                        New-UDSelectOption -Name 'User Impact...' -Value 1
+                                        New-UDSelectOption -Name "Logout current user from $($ComputerName)" -Value 2
+                                        New-UDSelectOption -Name "Delete user profiles from $($ComputerName)" -Value 3
+                                        New-UDSelectOption -Name "Delete Edge settings for users on $($ComputerName)" -Value 4
+                                        New-UDSelectOption -Name "Delete Chrome settings for users on $($ComputerName)" -Value 5
+                                    }
+                                    New-UDTooltip -TooltipContent {
+                                        New-UDTypography -Text "Open the selected function"
+                                    } -content { 
+                                        New-UDButton -Text "Open" -size small -Onclick {
+                                            $UserImpactMenu = Get-UDElement -Id 'UserImpact'
+                                            if ([string]::IsNullOrEmpty($UserImpactMenu) -or $UserImpactMenu -eq 1) {
+                                                Show-UDToast -Message "You need to select an option!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                                Break
+                                            }
+                                            else {
+                                                switch ($UserImpactMenu.Value) {
+                                                    2 {
+                                                        Disconnect-UserFromComputer -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+                                                    }
+                                                    3 {
+                                                        Remove-UserProfilesBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -YourDomain $YourDomain.ToUpper() -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+                                                    }
+                                                    5 {
+                                                        Remove-EdgeSettings -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+                                                    }
+                                                    5 {
+                                                        Remove-ChromeSettings  -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                                 New-UDGrid -Item -Size 12 -Content {
                                     New-UDHTML -Markup "</br>"

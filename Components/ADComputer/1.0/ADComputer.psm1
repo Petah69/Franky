@@ -733,191 +733,187 @@ function Remove-UserProfilesBtn {
         [Parameter(Mandatory = $false)][string]$LocalIpAddress,
         [Parameter(Mandatory = $false)][string]$RemoteIpAddress
     )
-    New-UDTooltip -TooltipContent {
-        New-UDTypography -Text "Delete user profiles from $($Computer)"
-    } -content { 
-        New-UDButton -Icon (New-UDIcon -Icon user_slash) -size medium -Onclick {
-            Show-UDModal -Header { "Delete user profile from $($Computer)" } -Content {
-                New-UDDynamic -Id 'ShowUsrProfdata' -content {
-                    New-UDGrid -Spacing '1' -Container -Content {
-                        if ($ActiveEventLog -eq "True") {
-                            Write-EventLog -LogName $EventLogName -Source "ShowComputerUserProfiles" -EventID 10 -EntryType Information -Message "$($User) has been looking at $($Computer) user profiles`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
-                        }
-                        $Profiles = Get-WMIObject -ComputerName $Computer -class Win32_UserProfile | Where-Object { (!$_.Special) -and ($_.LocalPath -ne 'C:\Users\Administrator') -and ($_.LocalPath -ne 'C:\Users\Administratör') }
 
-                        $SearchComputerGroupData = foreach ($Profile in $Profiles) {
-                            $SID = $Profile.SID
-                            $ProfileInfo = Invoke-Command -ComputerName $Computer { Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$using:SID" }
     
-                            If ($null -ne $ProfileInfo.LocalProfileUnloadTimeHigh) {
-                                $PUHigh = '{0:x}' -f $ProfileInfo.LocalProfileUnloadTimeHigh
-                                $PULow = '{0:x}' -f $ProfileInfo.LocalProfileUnloadTimeLow
-                                $PUcomb = -join ('0x', $PUHigh, $PULow)
-                                $ProfileUsed = [datetime]::FromFileTime([uint64]$PUcomb)                    
- 
-                                $ProfileAge = (New-TimeSpan -Start $ProfileUsed).Days #$ts.Days
+    Show-UDModal -Header { "Delete user profile from $($Computer)" } -Content {
+        New-UDDynamic -Id 'ShowUsrProfdata' -content {
+            New-UDGrid -Spacing '1' -Container -Content {
+                if ($ActiveEventLog -eq "True") {
+                    Write-EventLog -LogName $EventLogName -Source "ShowComputerUserProfiles" -EventID 10 -EntryType Information -Message "$($User) has been looking at $($Computer) user profiles`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                }
+                $Profiles = Get-WMIObject -ComputerName $Computer -class Win32_UserProfile | Where-Object { (!$_.Special) -and ($_.LocalPath -ne 'C:\Users\Administrator') -and ($_.LocalPath -ne 'C:\Users\Administratör') }
 
-                                if ($ProfileAge -ge 3000) {
-                                    $ProfileUsed = "N/A"
-                                    $ProfileAge = "N/A"
-                                }
-                            }
-                            Else {
-                                $ProfileUsed = "N/A"
-                                $ProfileAge = "N/A"
-                            }
+                $SearchComputerGroupData = foreach ($Profile in $Profiles) {
+                    $SID = $Profile.SID
+                    $ProfileInfo = Invoke-Command -ComputerName $Computer { Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$using:SID" }
+    
+                    If ($null -ne $ProfileInfo.LocalProfileUnloadTimeHigh) {
+                        $PUHigh = '{0:x}' -f $ProfileInfo.LocalProfileUnloadTimeHigh
+                        $PULow = '{0:x}' -f $ProfileInfo.LocalProfileUnloadTimeLow
+                        $PUcomb = -join ('0x', $PUHigh, $PULow)
+                        $ProfileUsed = [datetime]::FromFileTime([uint64]$PUcomb)                    
  
-                            try {
-                                $ProfileUser = (New-Object System.Security.Principal.SecurityIdentifier ($Profile.SID)).Translate( [System.Security.Principal.NTAccount]).Value
-                            }
-                            catch {
-                                $ProfileUser = $Profile.LocalPath
-                            }
-                            $ConProfileUsed = $ProfileUsed -as [datetime]
+                        $ProfileAge = (New-TimeSpan -Start $ProfileUsed).Days #$ts.Days
 
-                            [PSCustomObject]@{
-                                User          = $ProfileUser
-                                ProfilePath   = $Profile.LocalPath
-                                LastUsed      = $ConProfileUsed
-                                ProfileAge    = "$($ProfileAge) days"
-                                ProfileLoaded = $Profile.Loaded
-                            }
+                        if ($ProfileAge -ge 3000) {
+                            $ProfileUsed = "N/A"
+                            $ProfileAge = "N/A"
                         }
-                        $SearchComputerGroupColumns = @(
-                            New-UDTableColumn -Property User -Title "User" -IncludeInExport -IncludeInSearch -DefaultSortColumn
-                            New-UDTableColumn -Property ProfilePath -Title "Search path" -IncludeInExport -IncludeInSearch
-                            New-UDTableColumn -Property LastUsed -Title "Last Used" -IncludeInExport -IncludeInSearch -Render {
-                                if ([string]::IsNullOrEmpty($EventData.LastUsed)) {
-                                    "N/A"
-                                }
-                                else {
-                                    $LastUsedDate = $EventData.LastUsed -as [datetime]
-                                    "$($LastUsedDate)"
-                                }
-                            }
-                            New-UDTableColumn -Property ProfileAge -Title "Profile age" -IncludeInExport -IncludeInSearch
-                            New-UDTableColumn -Property ProfileLoaded -Title "Loaded?"
-                            New-UDTableColumn -Property Delete -Title "." -Render {
-                                New-UDTooltip -TooltipContent {
-                                    New-UDTypography -Text "Delete the user profile"
-                                } -content { 
-                                    New-UDButton -Icon (New-UDIcon -Icon backspace) -size small -Onclick {
-                                        if ($EventData.ProfileLoaded -eq "True") {
-                                            Show-UDToast -Message "You can't delete a profile that are loaded!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                                        }
-                                        else {
-                                            $UserRmProfileName = $EventData.User.Replace("$($YourDomain)\", "")
-                                            try {
-                                                $Btns = @("CloseBtn", "SelectedBtn", "RefreshBtn")
-                                                foreach ($btn in $btns) {
-                                                    Set-UDElement -Id $btn -Properties @{
-                                                        disabled = $true 
-                                                        text     = "Deleting..."
-                                                    }
-                                                }
-                                                Get-WmiObject -ComputerName $Computer Win32_UserProfile | Where-Object { $_.LocalPath -eq "C:\Users\$($UserRmProfileName)" } | Remove-WmiObject
-                                                if ($ActiveEventLog -eq "True") {
-                                                    Write-EventLog -LogName $EventLogName -Source "DeletedUserProfile" -EventID 10 -EntryType Information -Message "$($User) did delete $($UserRmProfileName) user profile from $($Computer)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
-                                                }
-                                                Show-UDToast -Message "The profile for $($UserRmProfileName) has been deleted!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                                                Set-UDElement -Id "CloseBtn" -Properties @{
-                                                    disabled = $false
-                                                    text     = "Close"
-                                                }
-                                                Set-UDElement -Id "RefreshBtn" -Properties @{
-                                                    disabled = $false
-                                                    text     = "Refresh"
-                                                }
-                                                Set-UDElement -Id "SelectedBtn" -Properties @{
-                                                    disabled = $false 
-                                                    text     = "Delete selected"
-                                                }
-                                                Sync-UDElement -id 'ShowUsrProfdata'
-                                            }
-                                            catch {
-                                                Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                                                Sync-UDElement -id 'ShowUsrProfdata'
-                                                Break
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        )
-                        if ([string]::IsNullOrEmpty($SearchComputerGroupData)) {
-                            New-UDGrid -Item -Size 12 -Content {
-                                New-UDAlert -Severity 'error' -Text "$($Computer) has no user profiles or could not establish a connection to $($Computer)"
-                            }
+                    }
+                    Else {
+                        $ProfileUsed = "N/A"
+                        $ProfileAge = "N/A"
+                    }
+ 
+                    try {
+                        $ProfileUser = (New-Object System.Security.Principal.SecurityIdentifier ($Profile.SID)).Translate( [System.Security.Principal.NTAccount]).Value
+                    }
+                    catch {
+                        $ProfileUser = $Profile.LocalPath
+                    }
+                    $ConProfileUsed = $ProfileUsed -as [datetime]
+
+                    [PSCustomObject]@{
+                        User          = $ProfileUser
+                        ProfilePath   = $Profile.LocalPath
+                        LastUsed      = $ConProfileUsed
+                        ProfileAge    = "$($ProfileAge) days"
+                        ProfileLoaded = $Profile.Loaded
+                    }
+                }
+                $SearchComputerGroupColumns = @(
+                    New-UDTableColumn -Property User -Title "User" -IncludeInExport -IncludeInSearch -DefaultSortColumn
+                    New-UDTableColumn -Property ProfilePath -Title "Search path" -IncludeInExport -IncludeInSearch
+                    New-UDTableColumn -Property LastUsed -Title "Last Used" -IncludeInExport -IncludeInSearch -Render {
+                        if ([string]::IsNullOrEmpty($EventData.LastUsed)) {
+                            "N/A"
                         }
                         else {
-                            New-UDGrid -Item -Size 12 -Content {
-                                $SearchOption = New-UDTableTextOption -Search "Search"
-                                New-UDTable -Id 'ComputerSearchTable' -Data $SearchComputerGroupData -Columns $SearchComputerGroupColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 20 -ShowSelection
-                            }
-                            New-UDGrid -Item -Size 12 -Content {
-                                New-UDButton -Text "Delete selected" -OnClick {
-                                    $ComputerSearchTable = Get-UDElement -Id "ComputerSearchTable"
-                                    $ComputerSearchLog = @($ComputerSearchTable.selectedRows.User)
-                                    if ($Null -ne $ComputerSearchTable.selectedRows.User) {                  
-                                        try {
-                                            $Btns = @("CloseBtn", "SelectedBtn", "RefreshBtn")
-                                            foreach ($btn in $btns) {
-                                                Set-UDElement -Id $btn -Properties @{
-                                                    disabled = $true 
-                                                    text     = "Deleting..."
-                                                }
+                            $LastUsedDate = $EventData.LastUsed -as [datetime]
+                            "$($LastUsedDate)"
+                        }
+                    }
+                    New-UDTableColumn -Property ProfileAge -Title "Profile age" -IncludeInExport -IncludeInSearch
+                    New-UDTableColumn -Property ProfileLoaded -Title "Loaded?"
+                    New-UDTableColumn -Property Delete -Title "." -Render {
+                        New-UDTooltip -TooltipContent {
+                            New-UDTypography -Text "Delete the user profile"
+                        } -content { 
+                            New-UDButton -Icon (New-UDIcon -Icon backspace) -size small -Onclick {
+                                if ($EventData.ProfileLoaded -eq "True") {
+                                    Show-UDToast -Message "You can't delete a profile that are loaded!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                }
+                                else {
+                                    $UserRmProfileName = $EventData.User.Replace("$($YourDomain)\", "")
+                                    try {
+                                        $Btns = @("CloseBtn", "SelectedBtn", "RefreshBtn")
+                                        foreach ($btn in $btns) {
+                                            Set-UDElement -Id $btn -Properties @{
+                                                disabled = $true 
+                                                text     = "Deleting..."
                                             }
-                                            @($ComputerSearchTable.selectedRows.ForEach( { 
-                                                        if ($_.ProfileLoaded -like "False") {
-                                                            $UserRmProfileName = $_.User.Replace("$($YourDomain)\", "")
-                                                            Get-WmiObject -ComputerName $Computer Win32_UserProfile | Where-Object { $_.LocalPath -eq "C:\Users\$($UserRmProfileName)" } | Remove-WmiObject
-                                                            if ($ActiveEventLog -eq "True") {
-                                                                Write-EventLog -LogName $EventLogName -Source "DeletedUserProfile" -EventID 10 -EntryType Information -Message "$($User) did delete $($UserRmProfileName) user profile from $($Computer)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
-                                                            }
-                                                        }
-                                                    } ) )
-                                            Show-UDToast -Message "The profiles for $($ComputerSearchLog -join ",") has been deleted!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                                            Set-UDElement -Id "CloseBtn" -Properties @{
-                                                disabled = $false
-                                                text     = "Close"
-                                            }
-                                            Set-UDElement -Id "RefreshBtn" -Properties @{
-                                                disabled = $false
-                                                text     = "Refresh"
-                                            }
-                                            Set-UDElement -Id "SelectedBtn" -Properties @{
-                                                disabled = $false 
-                                                text     = "Delete selected"
-                                            }
-                                            Sync-UDElement -id 'ShowUsrProfdata'
                                         }
-                                        catch {
-                                            Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                                            Break
+                                        Get-WmiObject -ComputerName $Computer Win32_UserProfile | Where-Object { $_.LocalPath -eq "C:\Users\$($UserRmProfileName)" } | Remove-WmiObject
+                                        if ($ActiveEventLog -eq "True") {
+                                            Write-EventLog -LogName $EventLogName -Source "DeletedUserProfile" -EventID 10 -EntryType Information -Message "$($User) did delete $($UserRmProfileName) user profile from $($Computer)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
                                         }
+                                        Show-UDToast -Message "The profile for $($UserRmProfileName) has been deleted!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                        Set-UDElement -Id "CloseBtn" -Properties @{
+                                            disabled = $false
+                                            text     = "Close"
+                                        }
+                                        Set-UDElement -Id "RefreshBtn" -Properties @{
+                                            disabled = $false
+                                            text     = "Refresh"
+                                        }
+                                        Set-UDElement -Id "SelectedBtn" -Properties @{
+                                            disabled = $false 
+                                            text     = "Delete selected"
+                                        }
+                                        Sync-UDElement -id 'ShowUsrProfdata'
                                     }
-                                    else {
-                                        Show-UDToast -Message "You have not selected any profile!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                    catch {
+                                        Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                        Sync-UDElement -id 'ShowUsrProfdata'
                                         Break
                                     }
-                                } -id "SelectedBtn"
+                                }
                             }
                         }
                     }
-                } -LoadingComponent {
-                    New-UDProgress -Circular
-                }                
-            } -Footer {
-                New-UDButton -Text "Refresh" -OnClick { 
-                    Sync-UDElement -id 'ShowUsrProfdata'
-                } -id "RefreshBtn"
-                New-UDButton -Text "Close" -OnClick {
-                    Hide-UDModal
-                } -id "CloseBtn"
+                )
+                if ([string]::IsNullOrEmpty($SearchComputerGroupData)) {
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDAlert -Severity 'error' -Text "$($Computer) has no user profiles or could not establish a connection to $($Computer)"
+                    }
+                }
+                else {
+                    New-UDGrid -Item -Size 12 -Content {
+                        $SearchOption = New-UDTableTextOption -Search "Search"
+                        New-UDTable -Id 'ComputerSearchTable' -Data $SearchComputerGroupData -Columns $SearchComputerGroupColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 20 -ShowSelection
+                    }
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDButton -Text "Delete selected" -OnClick {
+                            $ComputerSearchTable = Get-UDElement -Id "ComputerSearchTable"
+                            $ComputerSearchLog = @($ComputerSearchTable.selectedRows.User)
+                            if ($Null -ne $ComputerSearchTable.selectedRows.User) {                  
+                                try {
+                                    $Btns = @("CloseBtn", "SelectedBtn", "RefreshBtn")
+                                    foreach ($btn in $btns) {
+                                        Set-UDElement -Id $btn -Properties @{
+                                            disabled = $true 
+                                            text     = "Deleting..."
+                                        }
+                                    }
+                                    @($ComputerSearchTable.selectedRows.ForEach( { 
+                                                if ($_.ProfileLoaded -like "False") {
+                                                    $UserRmProfileName = $_.User.Replace("$($YourDomain)\", "")
+                                                    Get-WmiObject -ComputerName $Computer Win32_UserProfile | Where-Object { $_.LocalPath -eq "C:\Users\$($UserRmProfileName)" } | Remove-WmiObject
+                                                    if ($ActiveEventLog -eq "True") {
+                                                        Write-EventLog -LogName $EventLogName -Source "DeletedUserProfile" -EventID 10 -EntryType Information -Message "$($User) did delete $($UserRmProfileName) user profile from $($Computer)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                                                    }
+                                                }
+                                            } ) )
+                                    Show-UDToast -Message "The profiles for $($ComputerSearchLog -join ",") has been deleted!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                    Set-UDElement -Id "CloseBtn" -Properties @{
+                                        disabled = $false
+                                        text     = "Close"
+                                    }
+                                    Set-UDElement -Id "RefreshBtn" -Properties @{
+                                        disabled = $false
+                                        text     = "Refresh"
+                                    }
+                                    Set-UDElement -Id "SelectedBtn" -Properties @{
+                                        disabled = $false 
+                                        text     = "Delete selected"
+                                    }
+                                    Sync-UDElement -id 'ShowUsrProfdata'
+                                }
+                                catch {
+                                    Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                    Break
+                                }
+                            }
+                            else {
+                                Show-UDToast -Message "You have not selected any profile!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                Break
+                            }
+                        } -id "SelectedBtn"
+                    }
+                }
+            }
+        } -LoadingComponent {
+            New-UDProgress -Circular
+        }                
+    } -Footer {
+        New-UDButton -Text "Refresh" -OnClick { 
+            Sync-UDElement -id 'ShowUsrProfdata'
+        } -id "RefreshBtn"
+        New-UDButton -Text "Close" -OnClick {
+            Hide-UDModal
+        } -id "CloseBtn"
                                         
-            } -FullWidth -MaxWidth 'lg' -Persistent
-        }
-    }
+    } -FullWidth -MaxWidth 'lg' -Persistent
 }
 
 Function Compare-ComputerGrpsBtn {
@@ -1241,29 +1237,23 @@ Function Disconnect-UserFromComputer {
         [Parameter(Mandatory = $false)][string]$RemoteIpAddress
     )
 
-    New-UDTooltip -TooltipContent {
-        New-UDTypography -Text "Logout user from $($Computer)"
-    } -content { 
-        New-UDButton -Icon (New-UDIcon -Icon sign_out_alt) -size medium -Onclick {
-            Show-UDModal -Header { "Logout user from $($Computer)" } -Content {
-                New-UDGrid -Spacing '1' -Container -Content {
-                    New-UDGrid -Item -Size 12 -Content {
-                        New-UDTypography -Text "Are you sure that you want to logout the user from $($Computer)?"
-                    }
-                }
-            } -Footer {
-                New-UDButton -Text "Yes" -OnClick { 
-                    Show-UDToast -Message "$($SystInfo.Computer.UserName) has been logged out from $($Computer)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                    Hide-UDModal
-                    Invoke-CimMethod -ClassName Win32_Operatingsystem -ComputerName $Computer -MethodName Win32Shutdown -Arguments @{ Flags = 0 }
-                    if ($ActiveEventLog -eq "True") {
-                        Write-EventLog -LogName $EventLogName -Source "LogOutUser" -EventID 10 -EntryType Information -Message "$($User) did logout $($SystInfo.Computer.UserName) from $($Computer)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
-                    }
-                }
-                New-UDButton -Text "No" -OnClick { Hide-UDModal }
-            } -FullWidth -MaxWidth 'xs' -Persistent
+    Show-UDModal -Header { "Logout user from $($Computer)" } -Content {
+        New-UDGrid -Spacing '1' -Container -Content {
+            New-UDGrid -Item -Size 12 -Content {
+                New-UDTypography -Text "Are you sure that you want to logout the user from $($Computer)?"
+            }
         }
-    }
+    } -Footer {
+        New-UDButton -Text "Yes" -OnClick { 
+            Show-UDToast -Message "$($SystInfo.Computer.UserName) has been logged out from $($Computer)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+            Hide-UDModal
+            Invoke-CimMethod -ClassName Win32_Operatingsystem -ComputerName $Computer -MethodName Win32Shutdown -Arguments @{ Flags = 0 }
+            if ($ActiveEventLog -eq "True") {
+                Write-EventLog -LogName $EventLogName -Source "LogOutUser" -EventID 10 -EntryType Information -Message "$($User) did logout $($SystInfo.Computer.UserName) from $($Computer)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+            }
+        }
+        New-UDButton -Text "No" -OnClick { Hide-UDModal }
+    } -FullWidth -MaxWidth 'xs' -Persistent
 }
 
 function Remove-TempFilesClientBtn {
@@ -1464,101 +1454,96 @@ Function Remove-EdgeSettings {
         [Parameter(Mandatory = $false)][string]$RemoteIpAddress
     )
 
-    New-UDTooltip -TooltipContent {
-        New-UDTypography -Text "Delete Edge settings on $($Computer)"
-    } -content { 
-        New-UDButton -Icon (New-UDIcon -Icon edge) -size medium -Onclick {
-            $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName $Computer | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
-            Show-UDModal -Header { "Delete Edge settings on $($Computer)" } -Content {
-                New-UDGrid -Spacing '1' -Container -Content {
-                    New-UDGrid -Item -Size 2 -Content { }
-                    New-UDGrid -Item -Size 8 -Content {
-                        New-UDSelect -Id 'EdgeUser' -Option {
-                            New-UDSelectOption -Name 'Select user...' -Value 1
-                            foreach ($user in $profiles) {
-                                New-UDSelectOption -Name $user -Value $user
-                            }
-                        }
+
+    Show-UDModal -Header { "Delete Edge settings on $($Computer)" } -Content {
+        $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName $Computer | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
+        New-UDGrid -Spacing '1' -Container -Content {
+            New-UDGrid -Item -Size 2 -Content { }
+            New-UDGrid -Item -Size 8 -Content {
+                New-UDSelect -Id 'EdgeUser' -Option {
+                    New-UDSelectOption -Name 'Select user...' -Value 1
+                    foreach ($user in $profiles) {
+                        New-UDSelectOption -Name $user -Value $user
                     }
-                    New-UDGrid -Item -Size 2 -Content { }
                 }
-            } -Footer {
-                New-UDButton -Text "Delete" -OnClick { 
-                    $UserToClean = Get-UDElement -Id 'EdgeUser'
-                    $UserToClean = $UserToClean.value
-                    if ([string]::IsNullOrEmpty($UserToClean) -or $UserToClean -eq 1) {
-                        Show-UDToast -Message "You need to select a user!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                        Break
-                    }
-                    else {
-                        try {
-                            Set-UDElement -Id "EdgeUser" -Properties @{
-                                Disabled = $true
-                            }
-                            Set-UDElement -Id "DeleteBtn" -Properties @{
-                                Text     = "Deleting..."
-                                Disabled = $true
-                            }
-                           
-                            Set-UDElement -Id "CloseBtn" -Properties @{
-                                Text     = "Deleting..."
-                                Disabled = $true
-                            }
-                            Invoke-Command -ComputerName $Computer -Scriptblock {
-                                Param($UserToClean)
-                                $edgestatus = $(try { Get-Process -Name msedge -ErrorAction stop } catch { $Null })
-                                $msedgepath = "C:\Users\$($UserToClean)\AppData\Local\Microsoft\Edge\User Data\"
-                                $msedgebookmark = "C:\Users\$($UserToClean)\AppData\Local\Microsoft\Edge\User Data\Default\Bookmarks"
-
-                                if ($Null -ne $edgestatus) {
-                                    Stop-Process -Name msedge -Force
-                                }
-
-                                if (Test-Path -Path $msedgebookmark -PathType Leaf) {
-                                    if (Test-Path -Path "C:\Temp") {
-                                        Copy-Item $msedgebookmark -Destination "C:\Temp"
-                                    }
-                                    else {
-                                        New-Item -Path "C:\" -Name "Temp" -ItemType "directory" > $Null
-                                        Copy-Item $msedgebookmark -Destination "C:\Temp"
-                                    }
-                                }
-
-                                if (Test-Path -Path $msedgepath) {
-                                    Remove-Item $msedgepath -Recurse -Force
-                                }
-                            } -ArgumentList $UserToClean
-
-                            Show-UDToast -Message "Edge settings for $($UserToClean) on $($Computer) has now been deleted! Bookmarks has been saved in C:\Temp" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                            if ($ActiveEventLog -eq "True") {
-                                Write-EventLog -LogName $EventLogName -Source "DeleteEdgeSettings" -EventID 10 -EntryType Information -Message "$($User) deleted Edge settings on $($Computer) for $($UserToClean)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
-                            }
-                            Hide-UDModal
-                        }
-                        catch {
-                            Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                            Break
-                            Set-UDElement -Id "EdgeUser" -Properties @{
-                                Disabled = $false
-                            }
-                            Set-UDElement -Id "DeleteBtn" -Properties @{
-                                Text     = "Delete"
-                                Disabled = $false
-                            }
-                           
-                            Set-UDElement -Id "CloseBtn" -Properties @{
-                                Text     = "Close"
-                                Disabled = $false
-                            }
-                        }
-                    }
-                } -Id "DeleteBtn"
-                New-UDButton -Text "Close" -OnClick {
-                    Hide-UDModal
-                } -id "CloseBtn"
-            } -FullWidth -MaxWidth 'xs' -Persistent
+            }
+            New-UDGrid -Item -Size 2 -Content { }
         }
-    }
+    } -Footer {
+        New-UDButton -Text "Delete" -OnClick { 
+            $UserToClean = Get-UDElement -Id 'EdgeUser'
+            $UserToClean = $UserToClean.value
+            if ([string]::IsNullOrEmpty($UserToClean) -or $UserToClean -eq 1) {
+                Show-UDToast -Message "You need to select a user!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                Break
+            }
+            else {
+                try {
+                    Set-UDElement -Id "EdgeUser" -Properties @{
+                        Disabled = $true
+                    }
+                    Set-UDElement -Id "DeleteBtn" -Properties @{
+                        Text     = "Deleting..."
+                        Disabled = $true
+                    }
+                           
+                    Set-UDElement -Id "CloseBtn" -Properties @{
+                        Text     = "Deleting..."
+                        Disabled = $true
+                    }
+                    Invoke-Command -ComputerName $Computer -Scriptblock {
+                        Param($UserToClean)
+                        $edgestatus = $(try { Get-Process -Name msedge -ErrorAction stop } catch { $Null })
+                        $msedgepath = "C:\Users\$($UserToClean)\AppData\Local\Microsoft\Edge\User Data\"
+                        $msedgebookmark = "C:\Users\$($UserToClean)\AppData\Local\Microsoft\Edge\User Data\Default\Bookmarks"
+
+                        if ($Null -ne $edgestatus) {
+                            Stop-Process -Name msedge -Force
+                        }
+
+                        if (Test-Path -Path $msedgebookmark -PathType Leaf) {
+                            if (Test-Path -Path "C:\Temp") {
+                                Copy-Item $msedgebookmark -Destination "C:\Temp"
+                            }
+                            else {
+                                New-Item -Path "C:\" -Name "Temp" -ItemType "directory" > $Null
+                                Copy-Item $msedgebookmark -Destination "C:\Temp"
+                            }
+                        }
+
+                        if (Test-Path -Path $msedgepath) {
+                            Remove-Item $msedgepath -Recurse -Force
+                        }
+                    } -ArgumentList $UserToClean
+
+                    Show-UDToast -Message "Edge settings for $($UserToClean) on $($Computer) has now been deleted! Bookmarks has been saved in C:\Temp" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                    if ($ActiveEventLog -eq "True") {
+                        Write-EventLog -LogName $EventLogName -Source "DeleteEdgeSettings" -EventID 10 -EntryType Information -Message "$($User) deleted Edge settings on $($Computer) for $($UserToClean)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                    }
+                    Hide-UDModal
+                }
+                catch {
+                    Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                    Break
+                    Set-UDElement -Id "EdgeUser" -Properties @{
+                        Disabled = $false
+                    }
+                    Set-UDElement -Id "DeleteBtn" -Properties @{
+                        Text     = "Delete"
+                        Disabled = $false
+                    }
+                           
+                    Set-UDElement -Id "CloseBtn" -Properties @{
+                        Text     = "Close"
+                        Disabled = $false
+                    }
+                }
+            }
+        } -Id "DeleteBtn"
+        New-UDButton -Text "Close" -OnClick {
+            Hide-UDModal
+        } -id "CloseBtn"
+    } -FullWidth -MaxWidth 'xs' -Persistent
 }
 
 Function Remove-ChromeSettings {
@@ -1572,101 +1557,95 @@ Function Remove-ChromeSettings {
         [Parameter(Mandatory = $false)][string]$RemoteIpAddress
     )
 
-    New-UDTooltip -TooltipContent {
-        New-UDTypography -Text "Delete Chrome settings on $($Computer)"
-    } -content { 
-        New-UDButton -Icon (New-UDIcon -Icon chrome) -size medium -Onclick {
-            $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName $Computer | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
-            Show-UDModal -Header { "Delete Chrome settings on $($Computer)" } -Content {
-                New-UDGrid -Spacing '1' -Container -Content {
-                    New-UDGrid -Item -Size 2 -Content { }
-                    New-UDGrid -Item -Size 8 -Content {
-                        New-UDSelect -Id 'ChromeUser' -Option {
-                            New-UDSelectOption -Name 'Select user...' -Value 1
-                            foreach ($user in $profiles) {
-                                New-UDSelectOption -Name $user -Value $user
-                            }
-                        }
+    Show-UDModal -Header { "Delete Chrome settings on $($Computer)" } -Content {
+        $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName $Computer | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
+        New-UDGrid -Spacing '1' -Container -Content {
+            New-UDGrid -Item -Size 2 -Content { }
+            New-UDGrid -Item -Size 8 -Content {
+                New-UDSelect -Id 'ChromeUser' -Option {
+                    New-UDSelectOption -Name 'Select user...' -Value 1
+                    foreach ($user in $profiles) {
+                        New-UDSelectOption -Name $user -Value $user
                     }
-                    New-UDGrid -Item -Size 2 -Content { }
                 }
-            } -Footer {
-                New-UDButton -Text "Delete" -OnClick { 
-                    $UserToClean = Get-UDElement -Id 'ChromeUser'
-                    $UserToClean = $UserToClean.value
-                    if ([string]::IsNullOrEmpty($UserToClean) -or $UserToClean -eq 1) {
-                        Show-UDToast -Message "You need to select a user!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                        Break
-                    }
-                    else {
-                        try {
-                            Set-UDElement -Id "ChromeUser" -Properties @{
-                                Disabled = $true
-                            }
-                            Set-UDElement -Id "DeleteBtn" -Properties @{
-                                Text     = "Deleting..."
-                                Disabled = $true
-                            }
-                           
-                            Set-UDElement -Id "CloseBtn" -Properties @{
-                                Text     = "Deleting..."
-                                Disabled = $true
-                            }
-                            Invoke-Command -ComputerName $Computer -Scriptblock {
-                                Param($UserToClean)
-                                $Chromestatus = $(try { Get-Process -Name chrome -ErrorAction stop } catch { $Null })
-                                $chromepath = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\User Data\"
-                                $chromebookmark = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\User Data\Default\Bookmarks"
-
-                                if ($Null -ne $Chromestatus) {
-                                    Stop-Process -Name chrome -Force
-                                }
-
-                                if (Test-Path -Path $chromebookmark -PathType Leaf) {
-                                    if (Test-Path -Path "C:\Temp") {
-                                        Copy-Item $chromebookmark -Destination "C:\Temp"
-                                    }
-                                    else {
-                                        New-Item -Path "C:\" -Name "Temp" -ItemType "directory" > $Null
-                                        Copy-Item $chromebookmark -Destination "C:\Temp"
-                                    }
-                                }
-
-                                if (Test-Path -Path $chromepath) {
-                                    Remove-Item $chromepath -Recurse -Force
-                                }
-                            } -ArgumentList $UserToClean
-
-                            Show-UDToast -Message "Chrome settings for $($UserToClean) on $($Computer) has now been deleted! Bookmarks has been saved in C:\Temp" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                            if ($ActiveEventLog -eq "True") {
-                                Write-EventLog -LogName $EventLogName -Source "DeleteChromeSettings" -EventID 10 -EntryType Information -Message "$($User) deleted Chrome settings on $($Computer) for $($UserToClean)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
-                            }
-                            Hide-UDModal
-                        }
-                        catch {
-                            Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                            Break
-                            Set-UDElement -Id "ChromeUser" -Properties @{
-                                Disabled = $false
-                            }
-                            Set-UDElement -Id "DeleteBtn" -Properties @{
-                                Text     = "Delete"
-                                Disabled = $false
-                            }
-                           
-                            Set-UDElement -Id "CloseBtn" -Properties @{
-                                Text     = "Close"
-                                Disabled = $false
-                            }
-                        }
-                    }
-                } -Id "DeleteBtn"
-                New-UDButton -Text "Close" -OnClick {
-                    Hide-UDModal
-                } -id "CloseBtn"
-            } -FullWidth -MaxWidth 'xs' -Persistent
+            }
+            New-UDGrid -Item -Size 2 -Content { }
         }
-    }
+    } -Footer {
+        New-UDButton -Text "Delete" -OnClick { 
+            $UserToClean = Get-UDElement -Id 'ChromeUser'
+            $UserToClean = $UserToClean.value
+            if ([string]::IsNullOrEmpty($UserToClean) -or $UserToClean -eq 1) {
+                Show-UDToast -Message "You need to select a user!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                Break
+            }
+            else {
+                try {
+                    Set-UDElement -Id "ChromeUser" -Properties @{
+                        Disabled = $true
+                    }
+                    Set-UDElement -Id "DeleteBtn" -Properties @{
+                        Text     = "Deleting..."
+                        Disabled = $true
+                    }
+                           
+                    Set-UDElement -Id "CloseBtn" -Properties @{
+                        Text     = "Deleting..."
+                        Disabled = $true
+                    }
+                    Invoke-Command -ComputerName $Computer -Scriptblock {
+                        Param($UserToClean)
+                        $Chromestatus = $(try { Get-Process -Name chrome -ErrorAction stop } catch { $Null })
+                        $chromepath = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\User Data\"
+                        $chromebookmark = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\User Data\Default\Bookmarks"
+
+                        if ($Null -ne $Chromestatus) {
+                            Stop-Process -Name chrome -Force
+                        }
+
+                        if (Test-Path -Path $chromebookmark -PathType Leaf) {
+                            if (Test-Path -Path "C:\Temp") {
+                                Copy-Item $chromebookmark -Destination "C:\Temp"
+                            }
+                            else {
+                                New-Item -Path "C:\" -Name "Temp" -ItemType "directory" > $Null
+                                Copy-Item $chromebookmark -Destination "C:\Temp"
+                            }
+                        }
+
+                        if (Test-Path -Path $chromepath) {
+                            Remove-Item $chromepath -Recurse -Force
+                        }
+                    } -ArgumentList $UserToClean
+
+                    Show-UDToast -Message "Chrome settings for $($UserToClean) on $($Computer) has now been deleted! Bookmarks has been saved in C:\Temp" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                    if ($ActiveEventLog -eq "True") {
+                        Write-EventLog -LogName $EventLogName -Source "DeleteChromeSettings" -EventID 10 -EntryType Information -Message "$($User) deleted Chrome settings on $($Computer) for $($UserToClean)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                    }
+                    Hide-UDModal
+                }
+                catch {
+                    Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                    Break
+                    Set-UDElement -Id "ChromeUser" -Properties @{
+                        Disabled = $false
+                    }
+                    Set-UDElement -Id "DeleteBtn" -Properties @{
+                        Text     = "Delete"
+                        Disabled = $false
+                    }
+                           
+                    Set-UDElement -Id "CloseBtn" -Properties @{
+                        Text     = "Close"
+                        Disabled = $false
+                    }
+                }
+            }
+        } -Id "DeleteBtn"
+        New-UDButton -Text "Close" -OnClick {
+            Hide-UDModal
+        } -id "CloseBtn"
+    } -FullWidth -MaxWidth 'xs' -Persistent
 }
 
 Export-ModuleMember -Function "Remove-ChromeSettings", "Remove-EdgeSettings", "Ping-ADComputer", "Disconnect-UserFromComputer", "Restart-ADComputer", "Show-MonitorInfoBtn", "Show-InstalledDriversBtn", "Get-SysInfo", "Show-NetAdpBtn", "Show-ProcessTableBtn", "Show-InstalledSoftwareBtn", "Show-AutostartTableBtn", "Show-ServicesTableBtn", "Remove-UserProfilesBtn", "Compare-ComputerGrpsBtn", "Show-SchedualTaskTableBtn", "Remove-TempFilesClientBtn"
