@@ -145,7 +145,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                                     3 {
                                                         Remove-UserProfilesBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -YourDomain $YourDomain.ToUpper() -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                                     }
-                                                    5 {
+                                                    4 {
                                                         Remove-EdgeSettings -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -Computer $ConvertToComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                                     }
                                                     5 {
