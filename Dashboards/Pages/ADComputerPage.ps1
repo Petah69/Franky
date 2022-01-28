@@ -240,7 +240,10 @@ New-UDGrid -Spacing '1' -Container -Content {
                                         New-UDTypography -Text "$($ConvertPrimaryGroup)"
                                     }
                                 }
-                                New-UDGrid -Item -Size 2 -Content { }
+                                New-UDGrid -Item -Size 2 -Content {
+                                    $ConvertPrimaryGroup = $(try { $SearchADComputer.PrimaryGroup | ForEach-Object { $_.Replace("CN=", "").Split(",") | Select-Object -First 1 } } catch { $null })
+                                    Edit-PrimaryGroup -ObjectType "Computer" -ObjectName $ComputerName -CurrentValue $ConvertPrimaryGroup -RefreshOnClose "ComputerSearch" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+                                }
                                 New-UDGrid -Item -Size 4 -Content {
                                     New-UDTypography -Text "Managed By"
                                 }

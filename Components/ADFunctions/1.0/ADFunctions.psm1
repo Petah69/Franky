@@ -631,12 +631,6 @@ function Edit-PrimaryGroup {
     } -content { 
         New-UDButton -Icon (New-UDIcon -Icon pencil_square) -size small -Onclick { 
             Show-UDModal -Header { "Change primary group for $($ObjectName)" } -Content {
-                if ($ObjectType -eq "Computer") {
-                    $ObjectDistinguishedName = (Get-ADComputer -Identity $ObjectName -ErrorAction Stop).DistinguishedName
-                }
-                elseif ($ObjectType -eq "User") {
-                    $ObjectDistinguishedName = (Get-ADUser -Identity $ObjectName -ErrorAction Stop).DistinguishedName
-                }
                 New-UDGrid -Spacing '1' -Container -Content {
                     New-UDGrid -Item -Size 12 -Content {
                         New-UDTextbox -Id "txtPrimaryGroup" -Label "Enter new primary group" -Value $CurrentValue -FullWidth
@@ -649,15 +643,23 @@ function Edit-PrimaryGroup {
 
                     if (Get-ADGroup -Filter "samaccountname -eq '$($NewPrimaryGroup)'") {
                         try {
-                            $GroupMembers = Get-ADGroupMember -Identity $NewPrimaryGroup -Recursive | Select-Object -ExpandProperty Name
-                            if (-Not($GroupMembers -contains $ObjectName)) {
-                                Add-ADGroupMember -Identity $NewPrimaryGroup -Members $ObjectName
-                                if ($ActiveEventLog -eq "True") {
-                                    Write-EventLog -LogName $EventLogName -Source "AddToGroup" -EventID 10 -EntryType Information -Message "$($User) did add $($ObjectName) to $($NewPrimaryGroup)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                            if ($ObjectType -eq "Computer") {
+                                $ObjectDistinguishedName = (Get-ADComputer -Identity $ObjectName -ErrorAction Stop).DistinguishedName
+                            }
+                            elseif ($ObjectType -eq "User") {
+                                $ObjectDistinguishedName = (Get-ADUser -Identity $ObjectName -ErrorAction Stop).DistinguishedName
+                            }
+                            if (-Not($NewPrimaryGroup -eq "Domain Users")) {
+                                $GroupMembers = Get-ADGroupMember -Identity $NewPrimaryGroup -Recursive | Select-Object -ExpandProperty Name
+                                if (-Not($GroupMembers -contains $ObjectName)) {
+                                    Add-ADGroupMember -Identity $NewPrimaryGroup -Members $ObjectName
+                                    if ($ActiveEventLog -eq "True") {
+                                        Write-EventLog -LogName $EventLogName -Source "AddToGroup" -EventID 10 -EntryType Information -Message "$($User) did add $($ObjectName) to $($NewPrimaryGroup)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                                    }
                                 }
                             }
 
-                            $GetNewPrimaryGroupToken = Get-ADGroup -Identity NewPrimaryGroup -Properties primarygrouptoken | Select-Object primarygrouptoken -ExpandProperty primarygrouptoken
+                            $GetNewPrimaryGroupToken = Get-ADGroup -Identity $NewPrimaryGroup -Properties primarygrouptoken | Select-Object primarygrouptoken -ExpandProperty primarygrouptoken
                             $ReplaceNewPrimaryGroup = @{"PrimaryGroupID" = "$($GetNewPrimaryGroupToken)" }
                             Set-ADObject -Identity $ObjectDistinguishedName -Replace $ReplaceNewPrimaryGroup
                             
