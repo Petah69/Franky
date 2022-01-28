@@ -1281,7 +1281,7 @@ function Remove-TempFilesClientBtn {
                 }
             } -Footer {
                 New-UDButton -Text "Start" -OnClick {
-                    $Btns = @("StartBtn", "CloseBtn")
+                    $Btns = @("StartBtn", "CloseBtn", "LogBtn")
 
                     foreach ($btn in $Btns) {
                         Set-UDElement -Id "$($btn)" -Properties @{
@@ -1310,6 +1310,10 @@ function Remove-TempFilesClientBtn {
                             disabled = $false 
                             text     = "Start"
                         }
+                        Set-UDElement -Id 'LogBtn' -Properties @{
+                            disabled = $false 
+                            text     = "LogBtn"
+                        }
                         Sync-UDElement -Id $RefreshOnClose
                     }
                     catch {
@@ -1324,9 +1328,18 @@ function Remove-TempFilesClientBtn {
                             disabled = $false 
                             text     = "Start"
                         }
+                        Set-UDElement -Id 'LogBtn' -Properties @{
+                            disabled = $false 
+                            text     = "LogBtn"
+                        }
                         Break
                     }
                 } -id 'StartBtn'
+
+                New-UDButton -Text 'Download Log' -OnClick {
+                    $code = (Get-UDElement -Id 'CleanClientCode').code
+                    Start-UDDownload -StringData $code -FileName "$($Computer)-CleanTempFilesFrom.log"
+                } -id 'LogBtn'
 
                 New-UDButton -Text "Close" -OnClick {
                     Hide-UDModal
