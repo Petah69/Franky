@@ -37,6 +37,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                         Sync-UDElement -Id 'ComputerSearchStart'
                     }
                 }
+                New-ADComputerFranky -BoxToSync "txtComputerNameStart" -RefreshOnClose "ComputerSearchStart" -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
             }
             New-UDGrid -Item -Size 6 -Content { }
         }

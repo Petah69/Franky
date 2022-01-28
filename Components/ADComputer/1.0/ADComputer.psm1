@@ -1648,4 +1648,81 @@ Function Remove-ChromeSettings {
     } -FullWidth -MaxWidth 'xs' -Persistent
 }
 
-Export-ModuleMember -Function "Remove-ChromeSettings", "Remove-EdgeSettings", "Ping-ADComputer", "Disconnect-UserFromComputer", "Restart-ADComputer", "Show-MonitorInfoBtn", "Show-InstalledDriversBtn", "Get-SysInfo", "Show-NetAdpBtn", "Show-ProcessTableBtn", "Show-InstalledSoftwareBtn", "Show-AutostartTableBtn", "Show-ServicesTableBtn", "Remove-UserProfilesBtn", "Compare-ComputerGrpsBtn", "Show-SchedualTaskTableBtn", "Remove-TempFilesClientBtn"
+Function New-ADComputerFranky {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)][bool]$ActiveEventLog,
+        [Parameter(Mandatory = $false)][string]$EventLogName,
+        [Parameter(Mandatory = $false)][string]$BoxToSync,
+        [Parameter(Mandatory = $false)][string]$RefreshOnClose,
+        [Parameter(Mandatory = $false)][string]$User,
+        [Parameter(Mandatory = $false)][string]$LocalIpAddress,
+        [Parameter(Mandatory = $false)][string]$RemoteIpAddress
+    )
+    New-UDTooltip -TooltipContent {
+        New-UDTypography -Text "Create new computer"
+    } -content { 
+        New-UDButton -Icon (New-UDIcon -Icon plus_square) -size large -Onclick {
+            Show-UDModal -Header { "Create new computer" } -Content {
+                New-UDGrid -Spacing '1' -Container -Content {
+                    New-UDGrid -Item -Size 5 -Content {
+                        New-UDTextbox -Id 'txtComputerName' -Label 'Computer name (Required)' -FullWidth
+                    }
+                    New-UDGrid -Item -Size 2 -Content { }
+                    New-UDGrid -Item -Size 5 -Content {
+                        New-UDTextbox -Id 'txtComputerDisplayName' -Label 'Enter Display Name for the computer' -FullWidth
+                    }
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDTextbox -Id 'txtComputerDescription' -Label 'Enter description' -FullWidth
+                    }
+                }
+            } -Footer {
+                New-UDButton -text 'Create' -Onclick {
+                    $NewComputerName = (Get-UDElement -Id "txtComputerName").value
+                    $NewComputerDisplayName = (Get-UDElement -Id "txtComputerDisplayName").value
+                    $NewComputerDescription = (Get-UDElement -Id "txtComputerDescription").value
+                    $NewComputerName = $NewComputerName.trim()
+                    $NewComputerDisplayName = $NewComputerDisplayName.trim()
+
+                  
+                    if ([string]::IsNullOrEmpty($NewComputerName)) {
+                        Show-UDToast -Message "You must enter all the required options above!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                    else {
+                        if (Get-ADComputer -Filter "samaccountname -eq '$($NewComputerName)'" -properties SamAccountName) {
+                            Show-UDToast -Message "It's already a computer with the SamAccountName $($NewComputerName) in the AD!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            Break
+                        }
+                        else {
+                            if ([string]::IsNullOrEmpty($NewComputerDisplayName)) {
+                                $NewComputerDisplayName = $NewComputerName
+                            }
+                            try {
+                                New-ADComputer -Name $NewComputerName -SamAccountName $NewComputerName -DisplayName $NewComputerDisplayName -Description $NewComputerDescription -Path $OUComputerPath
+                                Show-UDToast -Message "$($NewComputerName) has been created!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                if ($ActiveEventLog -eq "True") {
+                                    Write-EventLog -LogName $EventLogName -Source "CreatedComputer" -EventID 10 -EntryType Information -Message "$($User) did create the computer $($NewComputerName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                                }
+                                Set-UDElement -Id $BoxToSync -Properties @{
+                                    Value = $NewComputerName
+                                }
+                                Sync-UDElement -id $RefreshOnClose
+                                Hide-UDModal
+                            }
+                            catch {
+                                Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                Break
+                            }
+                        }
+                    }
+                }
+                New-UDButton -Text "Close" -OnClick {
+                    Hide-UDModal
+                }
+            } -FullWidth -MaxWidth 'md' -Persistent
+        }
+    }
+}
+
+Export-ModuleMember -Function "New-ADComputerFranky", "Remove-ChromeSettings", "Remove-EdgeSettings", "Ping-ADComputer", "Disconnect-UserFromComputer", "Restart-ADComputer", "Show-MonitorInfoBtn", "Show-InstalledDriversBtn", "Get-SysInfo", "Show-NetAdpBtn", "Show-ProcessTableBtn", "Show-InstalledSoftwareBtn", "Show-AutostartTableBtn", "Show-ServicesTableBtn", "Remove-UserProfilesBtn", "Compare-ComputerGrpsBtn", "Show-SchedualTaskTableBtn", "Remove-TempFilesClientBtn"
