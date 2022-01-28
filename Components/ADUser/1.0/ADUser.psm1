@@ -943,6 +943,68 @@ function Edit-ADUserInfo {
     }
 }
 
+Function Edit-UserUPN {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)][bool]$ActiveEventLog,
+        [Parameter(Mandatory)][string]$UserName,
+        [Parameter(Mandatory = $false)][string]$CurrentValue,
+        [Parameter(Mandatory = $false)][string]$RefreshOnClose,
+        [Parameter(Mandatory = $false)][string]$EventLogName,
+        [Parameter(Mandatory = $false)][string]$User,
+        [Parameter(Mandatory = $false)][string]$LocalIpAddress,
+        [Parameter(Mandatory = $false)][string]$RemoteIpAddress
+    )
+    New-UDTooltip -TooltipContent {
+        New-UDTypography -Text "Change UPN for $($UserName)"
+    } -content { 
+        New-UDButton -Icon (New-UDIcon -Icon pencil_square) -size small -Onclick {
+            Show-UDModal -Header { "Change UPN for $($UserName)" } -Content {
+                $UPN = Get-adforest | select-Object UPNSuffixes -ExpandProperty UPNSuffixes
+                $ForestName = Get-adforest | select-Object name -ExpandProperty name
+                $Combined = @($UPN, $ForestName)
+                New-UDGrid -Spacing '1' -Container -Content {
+                    New-UDSelect -id 'UPN' -Option {
+                        New-UDSelectOption -Name $CurrentValue -Value 1
+                        foreach ($NewUPNs in $Combined) {
+                            New-UDSelectOption -Name "$($UserName)@$($NewUPNs)" -Value "$($UserName)@$($NewUPNs)"
+                        }
+                    }
+                }
+            } -Footer {
+                New-UDButton -Text "Change" -OnClick { 
+                    $SelectedUPN = Get-UDElement -Id 'UPN'
+
+                    if ([string]::IsNullOrEmpty($SelectedUPN.value) -or $SelectedUPN.value -eq 1) {
+                        Show-UDToast -Message "You need to select a new UPN!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                    else {
+                        try {
+                            Set-ADUser -Identity $UserName -UserPrincipalName $SelectedUPN.value
+                            Show-UDToast -Message "UPN for $($UserName) has been changed to $($SelectedUPN.value)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            if ($ActiveEventLog -eq "True") {
+                                Write-EventLog -LogName $EventLogName -Source "ChangeUserUPN" -EventID 10 -EntryType Information -Message "$($User) has changed UPN for $($Computer) to $($SelectedUPN.value)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                            }
+                            if ($NULL -ne $RefreshOnClose) {
+                                Sync-UDElement -Id $RefreshOnClose
+                            }
+                            Hide-UDModal
+                        }
+                        catch {
+                            Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            Break
+                        }
+                    }
+                }
+                New-UDButton -Text "Close" -OnClick {
+                    Hide-UDModal
+                }
+            } -FullWidth -MaxWidth 'xs' -Persistent
+        }
+    }
+}
 
 
-Export-ModuleMember -Function "Edit-ADUserInfo", "Show-WhatUserManage", "Set-UserChangePasswordNextLogin", "Set-UserChangePasswordBtn", "Set-UserPasswordExpiresBtn", "Unlock-ADUserAccountBtn", "New-PasswordADUserBtn", "New-ADAccountExpirationDateBtn", "Compare-ADUserGroupsBtn", "Add-MultiUsers"
+
+Export-ModuleMember -Function "Edit-UserUPN", "Edit-ADUserInfo", "Show-WhatUserManage", "Set-UserChangePasswordNextLogin", "Set-UserChangePasswordBtn", "Set-UserPasswordExpiresBtn", "Unlock-ADUserAccountBtn", "New-PasswordADUserBtn", "New-ADAccountExpirationDateBtn", "Compare-ADUserGroupsBtn", "Add-MultiUsers"

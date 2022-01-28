@@ -164,6 +164,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                     New-UDTypography -Text "$($ADuser.UserPrincipalName)"
                                 }
                                 New-UDGrid -Item -Size 2 -Content {
+                                    Edit-UserUPN -UserName $SearchUserName -CurrentValue $ADuser.UserPrincipalName -RefreshOnClose "UserSearch" -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                 }
                                 New-UDGrid -Item -Size 4 -Content {
                                     New-UDTypography -Text "SID"

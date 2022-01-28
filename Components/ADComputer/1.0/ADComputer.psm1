@@ -1476,8 +1476,13 @@ Function Remove-EdgeSettings {
     Show-UDModal -Header { "Delete Edge settings on $($Computer)" } -Content {
         $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName $Computer | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
         New-UDGrid -Spacing '1' -Container -Content {
-            New-UDGrid -Item -Size 2 -Content { }
-            New-UDGrid -Item -Size 8 -Content {
+            New-UDGrid -Item -Size 1 -Content { }
+            New-UDGrid -Item -Size 10 -Content {
+                New-UDHTML -Markup "<b>The users bookmarks will be backuped to C:\Temp\</b>"
+            }
+            New-UDGrid -Item -Size 1 -Content { }
+            New-UDGrid -Item -Size 4 -Content { }
+            New-UDGrid -Item -Size 4 -Content {
                 New-UDSelect -Id 'EdgeUser' -Option {
                     New-UDSelectOption -Name 'Select user...' -Value 1
                     foreach ($user in $profiles) {
@@ -1485,7 +1490,7 @@ Function Remove-EdgeSettings {
                     }
                 }
             }
-            New-UDGrid -Item -Size 2 -Content { }
+            New-UDGrid -Item -Size 4 -Content { }
         }
     } -Footer {
         New-UDButton -Text "Delete" -OnClick { 
@@ -1578,8 +1583,13 @@ Function Remove-ChromeSettings {
     Show-UDModal -Header { "Delete Chrome settings on $($Computer)" } -Content {
         $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName $Computer | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
         New-UDGrid -Spacing '1' -Container -Content {
-            New-UDGrid -Item -Size 2 -Content { }
-            New-UDGrid -Item -Size 8 -Content {
+            New-UDGrid -Item -Size 1 -Content { }
+            New-UDGrid -Item -Size 10 -Content {
+                New-UDHTML -Markup "The users bookmarks will be backuped to C:\Temp\"
+            }
+            New-UDGrid -Item -Size 1 -Content { }
+            New-UDGrid -Item -Size 4 -Content { }
+            New-UDGrid -Item -Size 4 -Content {
                 New-UDSelect -Id 'ChromeUser' -Option {
                     New-UDSelectOption -Name 'Select user...' -Value 1
                     foreach ($user in $profiles) {
@@ -1587,7 +1597,7 @@ Function Remove-ChromeSettings {
                     }
                 }
             }
-            New-UDGrid -Item -Size 2 -Content { }
+            New-UDGrid -Item -Size 4 -Content { }
         }
     } -Footer {
         New-UDButton -Text "Delete" -OnClick { 
