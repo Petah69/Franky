@@ -52,13 +52,8 @@ Function New-ADGrp {
                     }
                     New-UDGrid -Item -Size 2 -Content { }
                     New-UDGrid -Item -Size 5 -Content {
-                        New-UDTextbox -Id 'txtGrpMail' -Label 'Enter mail' -FullWidth
-                    }
-                    New-UDGrid -Item -Size 5 -Content {
                         New-UDTextbox -Id 'txtGrpOwner' -Label 'Enter manage by (AD-User)' -FullWidth
                     }
-                    New-UDGrid -Item -Size 2 -Content { }
-                    New-UDGrid -Item -Size 5 -Content { }
                     New-UDGrid -Item -Size 12 -Content {
                         New-UDHtml -Markup "</br>"
                     }
@@ -84,7 +79,6 @@ Function New-ADGrp {
                     $GrpDisplayName = (Get-UDElement -Id "txtGrpDisplayName").value
                     $GrpDescription = (Get-UDElement -Id "txtGrpDescription").value
                     $GrpInfo = (Get-UDElement -Id "txtGrpInfo").value
-                    $GrpMail = (Get-UDElement -Id "txtGrpMail").value
                     $GrpScope = (Get-UDElement -Id "radioScope").value
                     $GrpCategory = (Get-UDElement -Id "radioCategory").value
                     $GrpOwner = (Get-UDElement -Id "txtGrpOwner").value
@@ -92,18 +86,25 @@ Function New-ADGrp {
                     $GrpsAmAccountName = $GrpsAmAccountName.trim()
                     $GrpDisplayName = $GrpDisplayName.trim()
                     $GrpOwner = $GrpOwner.trim()
-                    $GrpMail = $GrpMail.trim()
 
+                  
                     if ([string]::IsNullOrEmpty($GrpsAmAccountName) -or [string]::IsNullOrEmpty($GrpCN) -or [string]::IsNullOrEmpty($GrpScope) -or [string]::IsNullOrEmpty($GrpCategory)) {
                         Show-UDToast -Message "You must enter all the required options above!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
                     }
                     else {
+                        if ([string]::IsNullOrEmpty($GrpInfo)) {
+                            $GrpInfo = "."
+                        }
+                        if ([string]::IsNullOrEmpty($GrpDisplayName)) {
+                            $GrpDisplayName = $GrpsAmAccountName
+                        }
                         if (Get-ADGroup -Filter "samaccountname -eq '$($GrpsAmAccountName)'" -properties SamAccountName) {
                             Show-UDToast -Message "It's already a group with the SamAccountName $($GrpsAmAccountName) in the AD!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                         }
                         else {
                             try {
-                                New-ADGroup -Name $GrpCN -SamAccountName $GrpsAmAccountName -GroupCategory $GrpCategory -GroupScope $GrpScope -DisplayName $GrpDisplayName -Path $OUGrpPath -Description $GrpDescription -ManagedBy $GrpOwner -OtherAttributes @{ 'info' = $GrpInfo; 'mail' = $GrpMail } 
+                                New-ADGroup -Name $GrpCN -SamAccountName $GrpsAmAccountName -GroupCategory $GrpCategory -GroupScope $GrpScope -DisplayName $GrpDisplayName -Path $OUGrpPath -Description $GrpDescription -ManagedBy $GrpOwner -OtherAttributes @{ 'info' = $GrpInfo }
                                 Show-UDToast -Message "$($GrpCN) has been created!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                                 if ($ActiveEventLog -eq "True") {
                                     Write-EventLog -LogName $EventLogName -Source "CreatedGroup" -EventID 10 -EntryType Information -Message "$($User) did create the group $($GrpCN)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 

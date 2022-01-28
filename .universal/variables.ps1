@@ -16,3 +16,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #>
 #
+New-PSUVariable -Name "EventLogName" -Value "Franky" -Description "Write the name you want for the EventLog"
+New-PSUVariable -Name "DashboardName" -Value "Franky" -Description "The name you want for the dashboard"
+
+New-PSUVariable -Name "YourDomain" -Value "localhost" -Description "Your short domain for example FR and NOT the full one like FR.se"
+New-PSUVariable -Name "YourFullDomain" -Value "localhost" -Description "Your full domain for example FR.se NOT only FR"
+New-PSUVariable -Name "AccessPort" -Value "5000" -Description "Enter the port that you use to access Franky/PSU WebGUI"
+
+New-PSUVariable -Name "OUComputerPath" -Value "OUPath" -Description "OU path to where you have your Computer objects"
+New-PSUVariable -Name "OUGrpPath" -Value "OUPath" -Description "OU path to where you have your group objects"
+New-PSUVariable -Name "OUUsrPath" -Value "OUUsrPath" -Description "OU path to where you have your user objects"

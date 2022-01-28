@@ -19,27 +19,9 @@
 $UDScriptRoot = "C:\ProgramData\UniversalAutomation\Repository\Dashboards"
 $NavBarLogo = '/pictures/'
 
-# MANDATORY SETTINGS!
-# Name for the dashboard
-$DashboardName = "Franky"
-# Enter your domain without .xx for example FR and not FR.SE
-$YourDomain = ""
-# Full domain name like FR.se
-$YourFullDomain = ""
-# Write what port you access Franky from in the browser like 80 or 443 or any other
-$AccessPort = ""
-#Write the path to where you want to save your groups
-$OUGrpPath = ""
-#Write the path to where you want to save your users
-$OUUsrPath = ""
-#Write the path to where you want to save your Computers
-$OUComputerPath = ""
-
 # LOGG SETTINGS!
 # If you want log actions in eventlog then change this to $True, and remember to run the "InstallLog.ps1" script before.
 [bool]$ActiveEventLog = $false
-#Here you can change what the LogName in eventlog should bee. As default it's Franky
-$EventLogName = "Franky"
 
 <# OPTIONAL SETTINGS
 Here you have two options, either activate Load Balancing or if you only have one PowerShell Universal server you should just
