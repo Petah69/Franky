@@ -809,7 +809,13 @@ function Edit-ADUserInfo {
                                     Set-ADUser -Identity $($UserName) -Office $NewParam
                                 }
                                 Manager {
-                                    Set-ADUser -Identity $($UserName) -Manager $NewParam  
+                                    if (Get-ADUser -Filter "Samaccountname -eq '$($NewParam)'") {
+                                        Set-ADUser -Identity $($UserName) -Manager $NewParam
+                                    }
+                                    else {
+                                        Show-UDToast -Message "$($NewParam) don't exist in the AD!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                        Break
+                                    }
                                 }
                                 ProfilePath {
                                     Set-ADUser -Identity $($UserName) -ProfilePath $NewParam
