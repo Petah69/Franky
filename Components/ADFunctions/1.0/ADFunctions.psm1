@@ -612,4 +612,80 @@ function Get-ADLastSeen {
     ($LogonDates | Sort-Object -Property LastLogon -Descending | Select-Object -First 1).LastLogon
 }
 
-Export-ModuleMember -Function "Edit-ManagedByBtn", "Edit-DescriptionBtn", "Edit-MailBtn", "Move-ADObjectBtn", "Rename-ADObjectBtn", "Set-EnableDisableADAccountBtn", "Remove-ADObjectBtn", "Get-ADLastSeen"
+function Edit-PrimaryGroup {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)][bool]$ActiveEventLog,
+        [Parameter(Mandatory)][string]$ObjectName,
+        [Parameter(Mandatory)][string]$ObjectType,
+        [Parameter(Mandatory = $false)][string]$CurrentValue,
+        [Parameter(Mandatory = $false)][string]$EventLogName,
+        [Parameter(Mandatory = $false)][string]$RefreshOnClose,
+        [Parameter(Mandatory = $false)][string]$User,
+        [Parameter(Mandatory = $false)][string]$LocalIpAddress,
+        [Parameter(Mandatory = $false)][string]$RemoteIpAddress
+    )
+
+    New-UDTooltip -TooltipContent {
+        New-UDTypography -Text "Change primary group for $($ObjectName)"
+    } -content { 
+        New-UDButton -Icon (New-UDIcon -Icon pencil_square) -size small -Onclick { 
+            Show-UDModal -Header { "Change primary group for $($ObjectName)" } -Content {
+                if ($ObjectType -eq "Computer") {
+                    $ObjectDistinguishedName = (Get-ADComputer -Identity $ObjectName -ErrorAction Stop).DistinguishedName
+                }
+                elseif ($ObjectType -eq "User") {
+                    $ObjectDistinguishedName = (Get-ADUser -Identity $ObjectName -ErrorAction Stop).DistinguishedName
+                }
+                New-UDGrid -Spacing '1' -Container -Content {
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDTextbox -Id "txtPrimaryGroup" -Label "Enter new primary group" -Value $CurrentValue -FullWidth
+                    }
+                }
+            } -Footer {
+                New-UDButton -Text "Save" -OnClick {
+                    $NewPrimaryGroup = (Get-UDElement -Id "txtPrimaryGroup").value
+                    $NewPrimaryGroup = $NewPrimaryGroup.trim()
+
+                    if (Get-ADGroup -Filter "samaccountname -eq '$($NewPrimaryGroup)'") {
+                        try {
+                            $GroupMembers = Get-ADGroupMember -Identity $NewPrimaryGroup -Recursive | Select-Object -ExpandProperty Name
+                            if (-Not($GroupMembers -contains $ObjectName)) {
+                                Add-ADGroupMember -Identity $NewPrimaryGroup -Members $ObjectName
+                                if ($ActiveEventLog -eq "True") {
+                                    Write-EventLog -LogName $EventLogName -Source "AddToGroup" -EventID 10 -EntryType Information -Message "$($User) did add $($ObjectName) to $($NewPrimaryGroup)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                                }
+                            }
+
+                            $GetNewPrimaryGroupToken = Get-ADGroup -Identity NewPrimaryGroup -Properties primarygrouptoken | Select-Object primarygrouptoken -ExpandProperty primarygrouptoken
+                            $ReplaceNewPrimaryGroup = @{"PrimaryGroupID" = "$($GetNewPrimaryGroupToken)" }
+                            Set-ADObject -Identity $ObjectDistinguishedName -Replace $ReplaceNewPrimaryGroup
+                            
+                            if ($ActiveEventLog -eq "True") {
+                                Write-EventLog -LogName $EventLogName -Source "Change$($ObjectType)PrimaryGroup" -EventID 10 -EntryType Information -Message "$($User) did change the primary group for $($ObjectName) to $($NewPrimaryGroup)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                            }
+                            if ($null -ne $RefreshOnClose) {
+                                Sync-UDElement -Id $RefreshOnClose
+                            }
+                            Show-UDToast -Message "$($NewPrimaryGroup) are now the primary group for $($ObjectName)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            Hide-UDModal
+                        }
+                        catch {
+                            Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            Break
+                        }
+                    }
+                    else {
+                        Show-UDToast -Message "$($NewPrimaryGroup) does not exist in the AD" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                }
+                New-UDButton -Text "Close" -OnClick {
+                    Hide-UDModal
+                }
+            } -FullWidth -MaxWidth 'xs' -Persistent
+        }
+    }
+}
+
+Export-ModuleMember -Function "Edit-PrimaryGroup", "Edit-ManagedByBtn", "Edit-DescriptionBtn", "Edit-MailBtn", "Move-ADObjectBtn", "Rename-ADObjectBtn", "Set-EnableDisableADAccountBtn", "Remove-ADObjectBtn", "Get-ADLastSeen"
