@@ -1275,6 +1275,11 @@ function Remove-TempFilesClientBtn {
         New-UDButton -Icon (New-UDIcon -Icon broom) -size medium -Onclick {
             Show-UDModal -Header { "Clean temp files from $($Computer)" } -Content {
                 New-UDGrid -Spacing '1' -Container -Content {
+                    New-UDGrid -Item -Size 3 -Content {}
+                    New-UDGrid -Item -Size 6 -Content { 
+                        New-UDTypography -Text "If you click in the editor and then press ctrl+f you can search"
+                    }
+                    New-UDGrid -Item -Size 3 -Content { }
                     New-UDGrid -Item -Size 12 -Content {
                         New-UDCodeEditor -Id 'CleanClientCode' -ReadOnly -Height 450
                     }
@@ -1675,7 +1680,7 @@ Function New-ADComputerFranky {
     New-UDTooltip -TooltipContent {
         New-UDTypography -Text "Create new computer"
     } -content { 
-        New-UDButton -Icon (New-UDIcon -Icon plus_square) -size large -Onclick {
+        New-UDButton -Icon (New-UDIcon -Icon plus) -size large -Onclick {
             Show-UDModal -Header { "Create new computer" } -Content {
                 New-UDGrid -Spacing '1' -Container -Content {
                     New-UDGrid -Item -Size 5 -Content {
