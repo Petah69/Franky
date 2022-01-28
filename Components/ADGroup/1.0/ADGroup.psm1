@@ -99,8 +99,10 @@ Function New-ADGrp {
                         if ([string]::IsNullOrEmpty($GrpDisplayName)) {
                             $GrpDisplayName = $GrpsAmAccountName
                         }
+
                         if (Get-ADGroup -Filter "samaccountname -eq '$($GrpsAmAccountName)'" -properties SamAccountName) {
                             Show-UDToast -Message "It's already a group with the SamAccountName $($GrpsAmAccountName) in the AD!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            Break
                         }
                         else {
                             try {

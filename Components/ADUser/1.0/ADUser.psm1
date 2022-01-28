@@ -750,6 +750,7 @@ function Edit-ADUserInfo {
             } -Footer {
                 New-UDButton -Text "Save" -OnClick {
                     $NewParam = (Get-UDElement -Id "txtChange").value
+
                     if ([string]::IsNullOrEmpty($NewParam)) {
                         Show-UDToast -Message "You must write something in the field above!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                         Break
@@ -813,8 +814,7 @@ function Edit-ADUserInfo {
                                         Set-ADUser -Identity $($UserName) -Manager $NewParam
                                     }
                                     else {
-                                        Show-UDToast -Message "$($NewParam) don't exist in the AD!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                                        Break
+                                        $ManagerCheck = "False"
                                     }
                                 }
                                 ProfilePath {
@@ -830,14 +830,20 @@ function Edit-ADUserInfo {
                                     Set-ADUser -Identity $($UserName) -HomeDrive $NewParam
                                 }
                             }
-                            Show-UDToast -Message "$($ParamToChange) has changed to $($NewParam) for $($UserName)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                            if ($ActiveEventLog -eq "True") {
-                                Write-EventLog -LogName $EventLogName -Source "ChangeUser$($ParamToChange)" -EventID 10 -EntryType Information -Message "$($User) did change $($ParamToChange) to $($NewParam) for $($UserName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                            if ($ManagerCheck -eq "False") {
+                                Show-UDToast -Message "$($NewParam) don't exist in the AD!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                Break
                             }
-                            if ($NULL -ne $RefreshOnClose) {
-                                Sync-UDElement -Id $RefreshOnClose
+                            else {
+                                Show-UDToast -Message "$($ParamToChange) has changed to $($NewParam) for $($UserName)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                if ($ActiveEventLog -eq "True") {
+                                    Write-EventLog -LogName $EventLogName -Source "ChangeUser$($ParamToChange)" -EventID 10 -EntryType Information -Message "$($User) did change $($ParamToChange) to $($NewParam) for $($UserName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                                }
+                                if ($NULL -ne $RefreshOnClose) {
+                                    Sync-UDElement -Id $RefreshOnClose
+                                }
+                                Hide-UDModal  
                             }
-                            Hide-UDModal  
                         }
                         Catch {
                             Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
