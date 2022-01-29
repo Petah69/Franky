@@ -1476,13 +1476,11 @@ Function Remove-EdgeSettings {
     Show-UDModal -Header { "Delete Edge settings on $($Computer)" } -Content {
         $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName $Computer | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
         New-UDGrid -Spacing '1' -Container -Content {
-            New-UDGrid -Item -Size 1 -Content { }
-            New-UDGrid -Item -Size 10 -Content {
-                New-UDHTML -Markup "<b>The users bookmarks will be backuped to C:\Temp\</b>"
+            New-UDGrid -Item -Size 12 -Content {
+                New-UDHTML -Markup "The users bookmarks will be restored after the settings has been deleted. Just incase, a backup of the bookmarks will be stored in C:\Temp"
             }
-            New-UDGrid -Item -Size 1 -Content { }
-            New-UDGrid -Item -Size 4 -Content { }
-            New-UDGrid -Item -Size 4 -Content {
+            New-UDGrid -Item -Size 5 -Content { }
+            New-UDGrid -Item -Size 3 -Content {
                 New-UDSelect -Id 'EdgeUser' -Option {
                     New-UDSelectOption -Name 'Select user...' -Value 1
                     foreach ($user in $profiles) {
@@ -1519,6 +1517,7 @@ Function Remove-EdgeSettings {
                         $edgestatus = $(try { Get-Process -Name msedge -ErrorAction stop } catch { $Null })
                         $msedgepath = "C:\Users\$($UserToClean)\AppData\Local\Microsoft\Edge\User Data\"
                         $msedgebookmark = "C:\Users\$($UserToClean)\AppData\Local\Microsoft\Edge\User Data\Default\Bookmarks"
+                        $MSEdgeBookmarkFolderPath = "C:\Users\$($UserToClean)\AppData\Local\Microsoft\Edge\User Data\Default\"
 
                         if ($Null -ne $edgestatus) {
                             Stop-Process -Name msedge -Force
@@ -1537,9 +1536,12 @@ Function Remove-EdgeSettings {
                         if (Test-Path -Path $msedgepath) {
                             Remove-Item $msedgepath -Recurse -Force
                         }
+                        New-Item -ItemType Directory -Force -Path $MSEdgeBookmarkFolderPath
+                        Copy-Item "C:\Temp\Bookmarks" -Destination $MSEdgeBookmarkFolderPath
+
                     } -ArgumentList $UserToClean
 
-                    Show-UDToast -Message "Edge settings for $($UserToClean) on $($Computer) has now been deleted! Bookmarks has been saved in C:\Temp" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                    Show-UDToast -Message "Edge settings for $($UserToClean) on $($Computer) has now been deleted! And the bookmarks has been restored!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                     if ($ActiveEventLog -eq "True") {
                         Write-EventLog -LogName $EventLogName -Source "DeleteEdgeSettings" -EventID 10 -EntryType Information -Message "$($User) deleted Edge settings on $($Computer) for $($UserToClean)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
                     }
@@ -1566,7 +1568,7 @@ Function Remove-EdgeSettings {
         New-UDButton -Text "Close" -OnClick {
             Hide-UDModal
         } -id "CloseBtn"
-    } -FullWidth -MaxWidth 'xs' -Persistent
+    } -FullWidth -MaxWidth 'md' -Persistent
 }
 
 Function Remove-ChromeSettings {
@@ -1583,13 +1585,11 @@ Function Remove-ChromeSettings {
     Show-UDModal -Header { "Delete Chrome settings on $($Computer)" } -Content {
         $Profiles = Get-WmiObject -ClassName Win32_UserProfile -ComputerName $Computer | Select-Object localpath | where-object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object { $_.localpath.Replace("C:\Users\", "") }
         New-UDGrid -Spacing '1' -Container -Content {
-            New-UDGrid -Item -Size 1 -Content { }
-            New-UDGrid -Item -Size 10 -Content {
-                New-UDHTML -Markup "The users bookmarks will be backuped to C:\Temp\"
+            New-UDGrid -Item -Size 12 -Content {
+                New-UDHTML -Markup "The users bookmarks will be restored after the settings has been deleted. Just incase, a backup of the bookmarks will be stored in C:\Temp"
             }
-            New-UDGrid -Item -Size 1 -Content { }
-            New-UDGrid -Item -Size 4 -Content { }
-            New-UDGrid -Item -Size 4 -Content {
+            New-UDGrid -Item -Size 5 -Content { }
+            New-UDGrid -Item -Size 3 -Content {
                 New-UDSelect -Id 'ChromeUser' -Option {
                     New-UDSelectOption -Name 'Select user...' -Value 1
                     foreach ($user in $profiles) {
@@ -1626,6 +1626,7 @@ Function Remove-ChromeSettings {
                         $Chromestatus = $(try { Get-Process -Name chrome -ErrorAction stop } catch { $Null })
                         $chromepath = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\User Data\"
                         $chromebookmark = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\User Data\Default\Bookmarks"
+                        $ChromeBookmarkFolderPath = "C:\Users\$($UserToClean)\AppData\Local\Google\Chrome\User Data\Default\"
 
                         if ($Null -ne $Chromestatus) {
                             Stop-Process -Name chrome -Force
@@ -1644,9 +1645,11 @@ Function Remove-ChromeSettings {
                         if (Test-Path -Path $chromepath) {
                             Remove-Item $chromepath -Recurse -Force
                         }
+                        New-Item -ItemType Directory -Force -Path $ChromeBookmarkFolderPath
+                        Copy-Item "C:\Temp\Bookmarks" -Destination $ChromeBookmarkFolderPath
                     } -ArgumentList $UserToClean
 
-                    Show-UDToast -Message "Chrome settings for $($UserToClean) on $($Computer) has now been deleted! Bookmarks has been saved in C:\Temp" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                    Show-UDToast -Message "Chrome settings for $($UserToClean) on $($Computer) has now been deleted! And the bookmarks has been restored!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                     if ($ActiveEventLog -eq "True") {
                         Write-EventLog -LogName $EventLogName -Source "DeleteChromeSettings" -EventID 10 -EntryType Information -Message "$($User) deleted Chrome settings on $($Computer) for $($UserToClean)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
                     }
@@ -1673,7 +1676,7 @@ Function Remove-ChromeSettings {
         New-UDButton -Text "Close" -OnClick {
             Hide-UDModal
         } -id "CloseBtn"
-    } -FullWidth -MaxWidth 'xs' -Persistent
+    } -FullWidth -MaxWidth 'md' -Persistent
 }
 
 Function New-ADComputerFranky {
