@@ -2,7 +2,10 @@
   
 Franky is the ultimate IT-Support/administration dashboard developed for PowerShell Universal and it’s an open source project under GNU General Public Licenses version 3.  
   
-You can access Franky from any device of choice. You simply need access to a browser from which you can administrate the active directory from any devices you like.  
+You can access Franky from any device of your choice as long as you have access to the host/server and a webbrowser.  
+  
+Don't have any server to host Franky on? No problem! Just install PowerShell Universal on your computer and then use Desktop mode.  
+ - <https://docs.powershelluniversal.com/platform/desktop-mode>  
   
 # Functions
 ## Generall
