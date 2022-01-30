@@ -47,6 +47,17 @@ $Navigation = @(
     New-UDListItem -Label 'Users' -Icon (New-UDIcon -Icon user -Size lg) -OnClick { Invoke-UDRedirect '/ADUsers' }
     New-UDListItem -Label 'Computers' -Icon (New-UDIcon -Icon desktop -Size lg) -OnClick { Invoke-UDRedirect '/ADComputers' }
     New-UDListItem -Label 'Groups' -Icon (New-UDIcon -Icon users -Size lg) -OnClick { Invoke-UDRedirect '/ADGroups' }
+    New-UDListItem -Label 'Generate reports' -Icon (New-UDIcon -Icon list_ul -Size lg) -Children {
+        New-UDListItem -Label 'Disabled users' -OnClick { 
+            Get-UserReports -ReportType "Disabled" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+        }
+        New-UDListItem -Label 'Locked out users' -OnClick { 
+            Get-UserReports -ReportType "Lockedout" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+        }
+        New-UDListItem -Label 'User password has expired' -OnClick { 
+            Get-UserReports -ReportType "PasswordExpired" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+        }
+    }
 )
 
 $Pages = @()

@@ -11,6 +11,7 @@ Don't have any server to host Franky on? No problem! Just install PowerShell Uni
 * Access Franky from any device, just need a browser
 * Everything the user does logs in Eventlog on the host
 * Load balance Franky on two hosts or more
+* Generate different reports like over all disabled user accounts, empty groups etc.
 
 ## User
 
