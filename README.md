@@ -3,7 +3,7 @@ Franky is the ultimate IT-Support dashboard developed for PowerShell Universal a
 Franky is developed by KeepCodeOpen, KeepCodeOpen is a nonprofit organization.  
   
 You can see under Docs/Instructions how to install and setup Franky including PowerShell Universal.  
-Or just visit <https://www.keepcodeopen.com/installation-instructions-franky/>  
+Or just visit <https://www.keepcodeopen.com/franky-installation-instructions/>  
   
 To see our roadmap visit: <https://www.keepcodeopen.com/franky-public-roadmap/>  
   
