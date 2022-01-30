@@ -1713,7 +1713,6 @@ Function New-ADComputerFranky {
                     $NewComputerDisplayName = (Get-UDElement -Id "txtComputerDisplayName").value
                     $NewComputerDescription = (Get-UDElement -Id "txtComputerDescription").value
                     $NewComputerName = $NewComputerName.trim()
-                    $NewComputerDisplayName = $NewComputerDisplayName.trim()
 
                   
                     if ([string]::IsNullOrEmpty($NewComputerName)) {

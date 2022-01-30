@@ -36,6 +36,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                         Sync-UDElement -Id 'UserSearchStart'
                     }
                 }
+                New-ADUserFranky -BoxToSync "txtName" -RefreshOnClose "UserSearchStart" -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
             }
             New-UDGrid -Item -Size 6 -Content { }
         }

@@ -30,7 +30,7 @@ Function New-ADGrp {
     New-UDTooltip -TooltipContent {
         New-UDTypography -Text "Create new group"
     } -content { 
-        New-UDButton -Icon (New-UDIcon -Icon users_cog) -size large -Onclick {
+        New-UDButton -Icon (New-UDIcon -Icon plus) -size large -Onclick {
             Show-UDModal -Header { "Create new group" } -Content {
                 New-UDGrid -Spacing '1' -Container -Content {
                     New-UDGrid -Item -Size 5 -Content {
@@ -84,8 +84,6 @@ Function New-ADGrp {
                     $GrpOwner = (Get-UDElement -Id "txtGrpOwner").value
                     $GrpCN = $GrpCN.trim()
                     $GrpsAmAccountName = $GrpsAmAccountName.trim()
-                    $GrpDisplayName = $GrpDisplayName.trim()
-                    $GrpOwner = $GrpOwner.trim()
 
                   
                     if ([string]::IsNullOrEmpty($GrpsAmAccountName) -or [string]::IsNullOrEmpty($GrpCN) -or [string]::IsNullOrEmpty($GrpScope) -or [string]::IsNullOrEmpty($GrpCategory)) {
@@ -104,21 +102,26 @@ Function New-ADGrp {
                             if ([string]::IsNullOrEmpty($GrpDisplayName)) {
                                 $GrpDisplayName = $GrpsAmAccountName
                             }
-                            
-                            try {
-                                New-ADGroup -Name $GrpCN -SamAccountName $GrpsAmAccountName -GroupCategory $GrpCategory -GroupScope $GrpScope -DisplayName $GrpDisplayName -Path $OUGrpPath -Description $GrpDescription -ManagedBy $GrpOwner -OtherAttributes @{ 'info' = $GrpInfo }
-                                Show-UDToast -Message "$($GrpCN) has been created!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                                if ($ActiveEventLog -eq "True") {
-                                    Write-EventLog -LogName $EventLogName -Source "CreatedGroup" -EventID 10 -EntryType Information -Message "$($User) did create the group $($GrpCN)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                            if (Get-ADUser -Filter "Samaccountname -eq '$($GrpOwner)'") {
+                                try {
+                                    New-ADGroup -Name $GrpCN -SamAccountName $GrpsAmAccountName -GroupCategory $GrpCategory -GroupScope $GrpScope -DisplayName $GrpDisplayName -Path $OUGrpPath -Description $GrpDescription -ManagedBy $GrpOwner -OtherAttributes @{ 'info' = $GrpInfo }
+                                    Show-UDToast -Message "$($GrpCN) has been created!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                    if ($ActiveEventLog -eq "True") {
+                                        Write-EventLog -LogName $EventLogName -Source "CreatedGroup" -EventID 10 -EntryType Information -Message "$($User) did create the group $($GrpCN)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                                    }
+                                    Set-UDElement -Id $BoxToSync -Properties @{
+                                        Value = $GrpsAmAccountName
+                                    }
+                                    Sync-UDElement -id $RefreshOnClose
+                                    Hide-UDModal
                                 }
-                                Set-UDElement -Id $BoxToSync -Properties @{
-                                    Value = $GrpsAmAccountName
+                                catch {
+                                    Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                    Break
                                 }
-                                Sync-UDElement -id $RefreshOnClose
-                                Hide-UDModal
                             }
-                            catch {
-                                Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            else {
+                                Show-UDToast -Message "$($GrpOwner) don't exist in the AD, please enter a new manager for the group" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                                 Break
                             }
                         }

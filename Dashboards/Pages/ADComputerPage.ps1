@@ -222,7 +222,6 @@ New-UDGrid -Spacing '1' -Container -Content {
                                     New-UDTypography -Text "$($SearchADComputer.DistinguishedName)"
                                 }
                                 New-UDGrid -Item -Size 2 -Content {
-                                    Move-ADObjectBtn -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -RefreshOnClose "ComputerSearch" -CurrentValue $SearchADComputer.DistinguishedName -ObjectToMove 'Computer' -ComputerName $ComputerName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
                                 }
                                 New-UDGrid -Item -Size 4 -Content {
                                     New-UDTypography -Text "Location"

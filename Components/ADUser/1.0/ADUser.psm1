@@ -964,7 +964,7 @@ Function Edit-UserUPN {
                 $ForestName = Get-adforest | select-Object name -ExpandProperty name
                 $Combined = @($UPN, $ForestName)
                 New-UDGrid -Spacing '1' -Container -Content {
-                    New-UDSelect -id 'UPN' -Option {
+                    New-UDSelect -id 'UPN' -FullWidth -Option {
                         New-UDSelectOption -Name $CurrentValue -Value 1
                         foreach ($NewUPNs in $Combined) {
                             New-UDSelectOption -Name "$($UserName)@$($NewUPNs)" -Value "$($UserName)@$($NewUPNs)"
@@ -980,20 +980,26 @@ Function Edit-UserUPN {
                         Break
                     }
                     else {
-                        try {
-                            Set-ADUser -Identity $UserName -UserPrincipalName $SelectedUPN.value
-                            Show-UDToast -Message "UPN for $($UserName) has been changed to $($SelectedUPN.value)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
-                            if ($ActiveEventLog -eq "True") {
-                                Write-EventLog -LogName $EventLogName -Source "ChangeUserUPN" -EventID 10 -EntryType Information -Message "$($User) has changed UPN for $($Computer) to $($SelectedUPN.value)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
-                            }
-                            if ($NULL -ne $RefreshOnClose) {
-                                Sync-UDElement -Id $RefreshOnClose
-                            }
-                            Hide-UDModal
-                        }
-                        catch {
-                            Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        if (Get-ADUser -Filter "UserPrincipalName -eq '$($SelectedUPN.value)'") {
+                            Show-UDToast -Message "The UPN $($SelectedUPN.value) already exists!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                             Break
+                        }
+                        else {
+                            try {
+                                Set-ADUser -Identity $UserName -UserPrincipalName $SelectedUPN.value
+                                Show-UDToast -Message "UPN for $($UserName) has been changed to $($SelectedUPN.value)" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                if ($ActiveEventLog -eq "True") {
+                                    Write-EventLog -LogName $EventLogName -Source "ChangeUserUPN" -EventID 10 -EntryType Information -Message "$($User) has changed UPN for $($Computer) to $($SelectedUPN.value)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                                }
+                                if ($NULL -ne $RefreshOnClose) {
+                                    Sync-UDElement -Id $RefreshOnClose
+                                }
+                                Hide-UDModal
+                            }
+                            catch {
+                                Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                Break
+                            }
                         }
                     }
                 }
@@ -1005,6 +1011,163 @@ Function Edit-UserUPN {
     }
 }
 
+Function New-ADUserFranky {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)][bool]$ActiveEventLog,
+        [Parameter(Mandatory = $false)][string]$EventLogName,
+        [Parameter(Mandatory = $false)][string]$BoxToSync,
+        [Parameter(Mandatory = $false)][string]$RefreshOnClose,
+        [Parameter(Mandatory = $false)][string]$User,
+        [Parameter(Mandatory = $false)][string]$LocalIpAddress,
+        [Parameter(Mandatory = $false)][string]$RemoteIpAddress
+    )
+    New-UDTooltip -TooltipContent {
+        New-UDTypography -Text "Create new user"
+    } -content { 
+        New-UDButton -Icon (New-UDIcon -Icon plus) -size large -Onclick {
+            Show-UDModal -Header { "Create new user" } -Content {
+                $UPN = Get-adforest | select-Object UPNSuffixes -ExpandProperty UPNSuffixes
+                $ForestName = Get-adforest | select-Object name -ExpandProperty name
+                $Combined = @($UPN, $ForestName)
+                New-UDGrid -Spacing '1' -Container -Content {
+                    New-UDGrid -Item -Size 5 -Content {
+                        New-UDTextbox -Id 'txtGivenName' -Label 'Givenname' -FullWidth
+                    }
+                    New-UDGrid -Item -Size 2 -Content { }
+                    New-UDGrid -Item -Size 5 -Content {
+                        New-UDTextbox -Id 'txtSurname' -Label 'Surname' -FullWidth
+                    }
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDTextbox -Id 'txtDisplayName' -Label 'Display name (Required)' -FullWidth
+                    }
+                    New-UDGrid -Item -Size 6 -Content {
+                        New-UDTextbox -Id 'txtUPN' -Label 'UPN (Required)' -FullWidth
+                    }
+                    New-UDGrid -Item -Size 6 -Content {
+                        New-UDSelect -id 'UPN' -FullWidth -Option {
+                            New-UDSelectOption -Name "Select Prefix..." -Value 1
+                            foreach ($UPNs in $Combined) {
+                                New-UDSelectOption -Name "$($UPNs)" -Value "$($UPNs)"
+                            }
+                        }
+                    }
+                    New-UDGrid -Item -Size 6 -Content {
+                        New-UDTextbox -Id 'txtSamAccountName' -Label 'SamAccountName (Required)' -FullWidth
+                    }
+                    New-UDGrid -Item -Size 6 -Content { }
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDHTML -Markup "</br>"
+                        New-UDHTML -Markup "Enter the desired password, the password must be at least 10 characters.</br>"
+                        New-UDDynamic -Id 'generatepassword' -content {
+                            $RndPwd = New-RndPassword
+                            New-UDTypography -Text "$($RndPwd)" -Style @{ 'font-weight' = '700' }
+                        }
+                        New-UDTooltip -TooltipContent {
+                            New-UDTypography -Text "Use this password"
+                        } -content { 
+                            New-UDButton -Icon (New-UDIcon -Icon paste) -Size small -OnClick {
+                                Set-UDElement -Id "txtPW1" -Properties @{
+                                    Value = $RndPwd
+                                }
+                                Set-UDElement -Id "txtPW2" -Properties @{
+                                    Value = $RndPwd
+                                }
+                            }
+                        }
+                        New-UDTooltip -TooltipContent {
+                            New-UDTypography -Text "Generate a new random password"
+                        } -content { 
+                            New-UDButton -Icon (New-UDIcon -Icon sync_alt) -Size small -OnClick {
+                                Sync-UDElement -Id 'generatepassword'
+                            }
+                        }
+                        New-UDHTML -Markup "</br>"
+                    }
+                    New-UDGrid -Item -Size 6 -Content {
+                        New-UDTextbox -Id 'txtPW1' -Label 'Password (Required)' -Type password -FullWidth
+                    }
+                    New-UDGrid -Item -Size 6 -Content {
+                        New-UDTextbox -Id 'txtPW2' -Label 'Verify password (Required)' -Type password -FullWidth
+                    }
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDCheckBox -Id 'MustChangePW' -LabelPlacement end -Label 'User must change password at next logon'
+                    }
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDCheckBox -Id 'CannotChangePW' -LabelPlacement end -Label 'User cannot change password'
+                    }
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDCheckBox -Id 'AccountDisabled' -Checked $true -LabelPlacement end -Label 'Uncheck to disable account'
+                    }
+                }
+            } -Footer {
+                New-UDButton -text 'Create' -Onclick {
+                    $GivenName = (Get-UDElement -Id "txtGivenName").value
+                    $Surname = (Get-UDElement -Id "txtSurname").value
+                    $DisplayName = (Get-UDElement -Id "txtDisplayName").value
+                    $SamAccountName = (Get-UDElement -Id "txtSamAccountName").value
+                    $CN = (Get-UDElement -Id "txtUPN").value
+                    $CN = $CN.trim()
+                    $SelectedUPN = (Get-UDElement -Id 'UPN').value
+                    $CombinedUPN = $CN + "@" + $SelectedUPN
+                    $SamAccountName = $SamAccountName.trim()
+                    $DisplayName = $DisplayName.trim()
+                    $MustChangePW = (Get-UDElement -Id "MustChangePW").checked
+                    $CannotChangePW = (Get-UDElement -Id "CannotChangePW").checked
+                    $ADAccountDisabled = (Get-UDElement -Id "AccountDisabled").checked
+                    $PW1 = (Get-UDElement -Id "txtPW1").value
+                    $PW2 = (Get-UDElement -Id "txtPW2").value
+                    $SecPWD = ConvertTo-SecureString $PW1 -AsPlainText -Force
+                  
+                    if ([string]::IsNullOrEmpty($DisplayName) -or [string]::IsNullOrEmpty($SamAccountName) -or [string]::IsNullOrEmpty($CN) -or [string]::IsNullOrEmpty($PW1) -or [string]::IsNullOrEmpty($PW2) -or $SelectedUPN -like "1") {
+                        Show-UDToast -Message "You must enter all the required options above!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                    else {
+                        if (Get-ADUser -Filter "UserPrincipalName -eq '$($CombinedUPN)'") {
+                            Show-UDToast -Message "The UPN $($CombinedUPN) already exists!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                            Break
+                        }
+                        else {
+                            if (Get-ADUser -Filter "samaccountname -eq '$($SamAccountName)'" -properties SamAccountName) {
+                                Show-UDToast -Message "It's already a user with the SamAccountName $($SamAccountName) in the AD!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                Break
+                            }
+                            else {
+                                if ($PW1 -eq $PW2) {
+                                    try {
+                                        New-ADUser -GivenName $GivenName -Surname $Surname -Name $CN -SamAccountName $SamAccountName -UserPrincipalName $CombinedUPN -DisplayName $DisplayName -Path $OUUsrPath -CannotChangePassword $CannotChangePW -ChangePasswordAtLogon $MustChangePW -Enabled $ADAccountDisabled -AccountPassword $SecPWD -Confirm:$false
+                                        Show-UDToast -Message "$($SamAccountName) has been created!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                        if ($ActiveEventLog -eq "True") {
+                                            Write-EventLog -LogName $EventLogName -Source "CreatedUser" -EventID 10 -EntryType Information -Message "$($User) did create the user $($SamAccountName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                                        }
+                                        Set-UDElement -Id $BoxToSync -Properties @{
+                                            Value = $SamAccountName
+                                        }
+                                        Sync-UDElement -id $RefreshOnClose
+                                        Hide-UDModal
+                                    }
+                                    catch {
+                                        Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                        Break
+                                    }
+                                }
+                                else {
+                                    Show-UDToast -Message "Password did not match, try again!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                    Break
+                                }
+                            }
+                        }
+                    }
+                }
+                New-UDButton -Text "Close" -OnClick {
+                    Hide-UDModal
+                }
+            } -FullWidth -MaxWidth 'sm' -Persistent
+        }
+    }
+}
 
 
-Export-ModuleMember -Function "Edit-UserUPN", "Edit-ADUserInfo", "Show-WhatUserManage", "Set-UserChangePasswordNextLogin", "Set-UserChangePasswordBtn", "Set-UserPasswordExpiresBtn", "Unlock-ADUserAccountBtn", "New-PasswordADUserBtn", "New-ADAccountExpirationDateBtn", "Compare-ADUserGroupsBtn", "Add-MultiUsers"
+
+Export-ModuleMember -Function "New-ADUserFranky", "Edit-UserUPN", "Edit-ADUserInfo", "Show-WhatUserManage", "Set-UserChangePasswordNextLogin", "Set-UserChangePasswordBtn", "Set-UserPasswordExpiresBtn", "Unlock-ADUserAccountBtn", "New-PasswordADUserBtn", "New-ADAccountExpirationDateBtn", "Compare-ADUserGroupsBtn", "Add-MultiUsers"
