@@ -19,7 +19,7 @@ For more information visit <https://keepcodeopen.com>
 | 🚀 | [Integrate Exchange Online]() | | |
 | 🚀 | [Integrate M/O 365]() | | |
 | 🚀 | [Integrate VMWare Horizon]() | | |
-| 🚀 | [Intergreate VMWare DEM]() |`in progress`| |
+| 🚀 | [Integrate VMWare DEM]() |`in progress`| |
 | 🚀 | [Integrate VMWare Workspace]() | | |
 | 🚀 | [Integrate VMWare vSphere]() |`in progress`| |  
   
