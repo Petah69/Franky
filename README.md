@@ -7,4 +7,20 @@ Or just visit <https://www.keepcodeopen.com/franky-installation-instructions/>
   
 To see our roadmap visit: <https://www.keepcodeopen.com/franky-public-roadmap/>  
   
-For more information visit <https://keepcodeopen.com>
+For more information visit <https://keepcodeopen.com>  
+
+# Public roadmap
+| Status | Goal | Labels | Repository or release |
+| :---: | :--- | --- | --- |
+| ✅ | [Public beta 1 release]() |`Done`| <https://github.com/KeepCodeOpen/Franky/releases/tag/v1.0-Beta1> |
+| 🚀 | [Work with the issues in repo and add more features from it]() |`in progress`| <https://github.com/KeepCodeOpen/Franky/issues> |
+| 🚀 | [Integrate AzureAD]() | | |
+| 🚀 | [Integrate Hyper-V]() | | |
+| 🚀 | [Integrate Exchange Online]() | | |
+| 🚀 | [Integrate M/O 365]() | | |
+| 🚀 | [Integrate VMWare Horizon]() | | |
+| 🚀 | [Intergreate VMWare DEM]() |`in progress`| |
+| 🚀 | [Integrate VMWare Workspace]() | | |
+| 🚀 | [Integrate VMWare vSphere]() |`in progress`| |  
+  
+Note, This features can run on hosts that are Linux, macOS, Windows and docker. The only thing is that AzureAD module are not working with ARM yet.  

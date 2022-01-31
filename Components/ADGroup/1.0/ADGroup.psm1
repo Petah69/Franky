@@ -156,11 +156,11 @@ function Add-MultiGroupBtn {
                 New-UDDynamic -Id 'MoreComputerSearchGroupList' -content {
                     $MoreADGroupData = Get-ADGroup -Filter * -Properties Info, samAccountName, Description | Select-Object @("samAccountName", "info", "Description")
                     $MoreADGroupColumns = @(
-                        New-UDTableColumn -Property samAccountName -Title "Group name" -IncludeInSearch
+                        New-UDTableColumn -Property samAccountName -Title "Group name" -IncludeInSearch -DefaultSortColumn
                         New-UDTableColumn -Property Description -Title "Description" -IncludeInSearch
                         New-UDTableColumn -Property Info -Title "Info" -IncludeInSearch
                     )
-                    New-UDTable -Id 'MoreADTable' -Data $MoreADGroupData -Columns $MoreADGroupColumns -Title "Select group" -ShowSearch -ShowPagination -Dense -Sort -PageSize 10 -PageSizeOptions @(10, 20) -DisablePageSizeAll -ShowSelection
+                    New-UDTable -Id 'MoreADTable' -Data $MoreADGroupData -Columns $MoreADGroupColumns -Title "Select group" -DefaultSortDirection “Ascending” -ShowSearch -ShowPagination -Dense -Sort -PageSize 10 -PageSizeOptions @(10, 20) -DisablePageSizeAll -ShowSelection
                 } -LoadingComponent {
                     New-UDProgress -Circular
                 }

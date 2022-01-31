@@ -16,9 +16,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #>
 
-$UDScriptRoot = "C:\ProgramData\UniversalAutomation\Repository\Dashboards"
-$NavBarLogo = '/pictures/'
-
 # LOGG SETTINGS!
 # If you want log actions in eventlog then change this to $True, and remember to run the "InstallLog.ps1" script before.
 [bool]$ActiveEventLog = $false
@@ -56,6 +53,9 @@ $Navigation = @(
         }
         New-UDListItem -Label 'User password has expired' -OnClick { 
             Get-UserReports -ReportType "PasswordExpired" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+        }
+        New-UDListItem -Label 'Disabled computers' -OnClick { 
+            Get-ComputerReport -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
         }
     }
 )

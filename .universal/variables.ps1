@@ -18,6 +18,8 @@
 #
 New-PSUVariable -Name "EventLogName" -Value "Franky" -Description "Write the name you want for the EventLog"
 New-PSUVariable -Name "DashboardName" -Value "Franky" -Description "The name you want for the dashboard"
+New-PSUVariable -Name "NavBarLogo" -Value "/pictures/" -Description "Path to the logo"
+New-PSUVariable -Name "UDScriptRoot" -Value "C:\ProgramData\UniversalAutomation\Repository\Dashboards" -Description "Path to where you save your pages"
 
 New-PSUVariable -Name "YourDomain" -Value "localhost" -Description "Your short domain for example FR and NOT the full one like FR.se"
 New-PSUVariable -Name "YourFullDomain" -Value "localhost" -Description "Your full domain for example FR.se NOT only FR"

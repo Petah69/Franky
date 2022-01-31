@@ -414,14 +414,14 @@ function Add-MultiUsers {
                     New-UDGrid -Spacing '1' -Container -Content {
                         $MoreADUserData = Get-ADUser -Filter *  -Properties samAccountName, Surname, Givenname, EmailAddress, Description | Select-Object @("Givenname", "Surname", "samAccountName", "EmailAddress", "Description")
                         $MoreADUserColumns = @(
-                            New-UDTableColumn -Property samAccountName -Title "Username" -IncludeInSearch
+                            New-UDTableColumn -Property samAccountName -Title "Username" -IncludeInSearch -DefaultSortColumn
                             New-UDTableColumn -Property Givenname -Title "Givenname" -IncludeInSearch
                             New-UDTableColumn -Property Surname -Title "Surname" -IncludeInSearch
                             New-UDTableColumn -Property EmailAddress -Title "Mail" -IncludeInSearch
                             New-UDTableColumn -Property Description -Title "Description" -IncludeInSearch
                         )
                         New-UDGrid -Item -Size 12 -Content {
-                            New-UDTable -Id 'MoreADTable' -Data $MoreADUserData -Columns $MoreADUserColumns -Title "Select user" -ShowSearch -ShowPagination -Dense -Sort -PageSize 10 -PageSizeOptions @(10, 20) -DisablePageSizeAll -ShowSelection
+                            New-UDTable -Id 'MoreADTable' -Data $MoreADUserData -Columns $MoreADUserColumns -Title "Select user" -DefaultSortDirection “Ascending” -ShowSearch -ShowPagination -Dense -Sort -PageSize 10 -PageSizeOptions @(10, 20) -DisablePageSizeAll -ShowSelection
                         }
                     }
                 } -LoadingComponent {
@@ -705,11 +705,11 @@ function Show-WhatUserManage {
                                     }
                                 }
                             }
-                            New-UDTableColumn -Property ManageObjects -Title "Object name" -IncludeInSearch -IncludeInExport
+                            New-UDTableColumn -Property ManageObjects -Title "Object name" -IncludeInSearch -IncludeInExport -DefaultSortColumn
                             New-UDTableColumn -Property DistinguishedName -Title "Distinguished name" -IncludeInSearch -IncludeInExport
                         )
                         New-UDGrid -Item -Size 12 -Content {
-                            New-UDTable -Id 'MoreADTable' -Data $MoreADUserData -Columns $MoreADUserColumns -ShowExport -ShowSearch -ShowPagination -Dense -Sort -PageSize 10 -PageSizeOptions @(10, 20, 30, 40)
+                            New-UDTable -Id 'MoreADTable' -Data $MoreADUserData -Columns $MoreADUserColumns -DefaultSortDirection “Ascending” -ShowExport -ShowSearch -ShowPagination -Dense -Sort -PageSize 10 -PageSizeOptions @(10, 20, 30, 40)
                         }
                     }
                 } -LoadingComponent {
