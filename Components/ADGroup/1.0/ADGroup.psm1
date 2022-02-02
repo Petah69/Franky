@@ -376,6 +376,9 @@ Function Show-ADGroupMemberOf {
     } -content { 
         New-UDButton -Icon (New-UDIcon -Icon users) -size medium -Onclick { 
             Show-UDModal -Header { "$($ObjectName) are member of" } -Content {
+                if ($ActiveEventLog -eq "True") {
+                    Write-EventLog -LogName $EventLogName -Source "ShowMemberOf" -EventID 10 -EntryType Information -Message "$($User) did look at memberof for $($ObjectName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                }
                 New-UDDynamic -Id 'MemberOf' -content {
                     New-UDGrid -Spacing '1' -Container -Content {
                         $Columns = @(
@@ -488,4 +491,147 @@ Function Show-ADGroupMemberOf {
     }
 }
 
-Export-ModuleMember -Function "New-ADGrp", "Add-MultiGroupBtn", "Edit-GroupInfoBtn", "Set-GroupScopeBtn", "Set-GroupCategoryBtn", "Show-ADGroupMemberOf"
+function Show-WhosMemberInGroup {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)][string]$GroupName,
+        [Parameter(Mandatory)][string]$User,
+        [Parameter(Mandatory)][string]$LocalIpAddress,
+        [Parameter(Mandatory)][string]$RemoteIpAddress,
+        [Parameter(Mandatory)][bool]$ActiveEventLog,
+        [Parameter(Mandatory = $false)][string]$EventLogName
+    )
+
+    Show-UDModal -Header { "Show members in $($GroupName)" } -Content {
+        if ($ActiveEventLog -eq "True") {
+            Write-EventLog -LogName $EventLogName -Source "GroupSearch" -EventID 10 -EntryType Information -Message "$($User) did search for group $($GroupName)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+        }
+        New-UDGrid -Spacing '1' -Container -Content {
+            New-UDDynamic -Id 'CheckGroup' -content {
+                New-UDGrid -Item -Size 12 -Content {
+                    $SearchGroupUser = Get-ADGroupMember -Identity $GroupName 
+                    $SearchGroupUserData = $SearchGroupUser | Foreach-Object {
+                        if ($_.objectClass -eq 'user') {
+                            $grpuser = Get-ADUser -Filter "samaccountname -eq '$($_.SamAccountName)'" -Properties GivenName, Surname, EmailAddress, Description
+                            if ($null -ne $grpuser) {
+                                [PSCustomObject]@{
+                                    ObjectType     = "User"
+                                    SamAccountName = $grpuser.samAccountName
+                                    Name           = $grpuser.GivenName + " " + $grpuser.Surname
+                                    EmailAddress   = $grpuser.EmailAddress
+                                    Description    = $grpuser.Description
+                                }
+                            }
+                        }
+                        elseif ($_.objectClass -eq 'group') {
+                            $grp = Get-ADGroup -Filter "samaccountname -eq '$($_.SamAccountName)'" -Properties samAccountName, Description, mail, info
+                            if ($null -ne $grp) {
+                                [PSCustomObject]@{
+                                    ObjectType     = "Group"
+                                    SamAccountName = $grp.samAccountName
+                                    EmailAddress   = $grp.mail
+                                    Description    = $grp.Description
+                                    Info           = $grp.Info
+                                }
+                            }
+                        }
+                        elseif ($_.objectClass -eq 'computer') {
+                            $grpcomp = Get-ADComputer -Filter "samaccountname -eq '$($_.SamAccountName)'"  -Properties SamAccountName, Name, Description
+                            if ($null -ne $grpcomp) {
+                                [PSCustomObject]@{
+                                    ObjectType     = "Computer"
+                                    SamAccountName = $grpcomp.SamAccountName
+                                    Name           = $grpcomp.name
+                                    Description    = $grpcomp.Description
+                                }
+                            }
+                        }
+                        else {
+                            Write-Warning "Unknown objectClass encountered"
+                        }
+                    }
+                    $SearchGroupUserColumns = @(
+                        New-UDTableColumn -Property ObjectType -Title "Type" -IncludeInExport -IncludeInSearch
+                        New-UDTableColumn -Property SamAccountName -Title "Name" -IncludeInExport -IncludeInSearch -DefaultSortColumn
+                        New-UDTableColumn -Property Name -Title "Name" -IncludeInExport -IncludeInSearch
+                        New-UDTableColumn -Property EmailAddress -Title "Mail" -IncludeInExport -IncludeInSearch
+                        New-UDTableColumn -Property Description -Title "Description" -IncludeInExport -IncludeInSearch
+                        New-UDTableColumn -Property Info -Title "Info" -IncludeInExport -IncludeInSearch
+                    )
+                    if ([string]::IsNullOrEmpty($SearchGroupUserData)) {
+                        New-UDGrid -Item -Size 12 -Content {
+                            New-UDAlert -Severity 'info' -Text "$($GroupName) don't have any members!"
+                        }
+                    }
+                    else {
+                        New-UDGrid -Item -Size 12 -Content {
+                            $SearchMemberOption = New-UDTableTextOption -Search "Search after member"
+                            New-UDTable -Id 'GroupSearchTable' -Data $SearchGroupUserData -Columns $SearchGroupUserColumns -DefaultSortDirection "Ascending" -TextOption $SearchMemberOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -Sort -PageSize 10 -PageSizeOptions @(10, 20, 30, 40, 50)
+                        }
+                    }
+                }
+            } -LoadingComponent {
+                New-UDProgress -Circular
+            }
+        }
+    } -Footer {
+        New-UDButton -Text "Refresh" -Size medium -OnClick {
+            Sync-UDElement -Id "CheckGroup"
+        }
+        New-UDButton -Text "Close" -Size medium -OnClick {
+            Hide-UDModal
+        }
+    } -FullWidth -MaxWidth 'md' -Persistent
+}
+
+Function Add-ToGroupExcel {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)][bool]$ActiveEventLog,
+        [Parameter(Mandatory = $false)][string]$RefreshOnClose,
+        [Parameter(Mandatory = $false)][string]$EventLogName,
+        [Parameter(Mandatory = $false)][string]$User,
+        [Parameter(Mandatory = $false)][string]$LocalIpAddress,
+        [Parameter(Mandatory = $false)][string]$RemoteIpAddress
+    )
+    Show-UDModal -Header { "Add to group from excel file" } -Content {
+        New-UDDynamic -Id 'ImportFromExcel' -content {
+            New-UDGrid -Spacing '1' -Container -Content {
+                New-UDGrid -Item -Size 3 -Content { }
+                New-UDGrid -Item -Size 7 -Content {
+                    New-UDUpload -Text 'Choose file' -OnUpload {
+                        $Data = $Body | ConvertFrom-Json
+                        $bytes = [System.Convert]::FromBase64String($Data.Data)
+                        [System.IO.File]::WriteAllBytes("$($UploadTemp)$($Data.Name)", $bytes)
+                        $Session:FileName = $Data.Name
+                        Sync-UDElement -id 'ImportFromExcel'
+                    }
+                    New-UDHtml -Markup "<b>Uploaded file:</b> $($Session:FileName)"
+                }
+                New-UDGrid -Item -Size 2 -Content { }
+            }
+        }
+    } -Footer {
+        New-UDButton -Text "Execute" -OnClick { 
+            try {
+                $ExcelFile = Import-Excel -Path "$($UploadTemp)$($Session:FileName)"
+            }
+            catch {
+                Show-UDToast -Message "Cloud not import the excel file!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                Break
+            }
+            foreach ($getinfo in $ExcelFile) {
+                Add-ADGroupMember -Identity $getinfo.group -members $getinfo.objectname
+                if ($ActiveEventLog -eq "True") {
+                    Write-EventLog -LogName $EventLogName -Source "AddToGroup" -EventID 10 -EntryType Information -Message "$($User) did add $($getinfo.objectname) to $($getinfo.group)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                }
+            }
+            Show-UDToast -Message "All of the users from the file was added to the groups!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+        }
+        New-UDButton -Text "Close" -OnClick {
+            Hide-UDModal
+        }
+    } -FullWidth -MaxWidth 'xs' -Persistent
+}
+
+Export-ModuleMember -Function "Add-ToGroupExcel", "Show-WhosMemberInGroup", "New-ADGrp", "Add-MultiGroupBtn", "Edit-GroupInfoBtn", "Set-GroupScopeBtn", "Set-GroupCategoryBtn", "Show-ADGroupMemberOf"

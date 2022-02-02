@@ -1168,6 +1168,4 @@ Function New-ADUserFranky {
     }
 }
 
-
-
 Export-ModuleMember -Function "New-ADUserFranky", "Edit-UserUPN", "Edit-ADUserInfo", "Show-WhatUserManage", "Set-UserChangePasswordNextLogin", "Set-UserChangePasswordBtn", "Set-UserPasswordExpiresBtn", "Unlock-ADUserAccountBtn", "New-PasswordADUserBtn", "New-ADAccountExpirationDateBtn", "Compare-ADUserGroupsBtn", "Add-MultiUsers"

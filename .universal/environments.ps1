@@ -16,4 +16,4 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #>
 
-New-PSUEnvironment -Name "Franky" -Version "Franky" -Path "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe" -Modules @('ActiveDirectory') -Variables @('EventLogName', 'DashboardName', 'YourDomain', 'YourFullDomain', 'AccessPort', 'OUComputerPath', 'OUGrpPath', 'OUUsrPath', 'UDScriptRoot', 'NavBarLogo')
+New-PSUEnvironment -Name "Franky" -Version "Franky" -Path "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe" -Modules @('ActiveDirectory', 'ImportExcel') -Variables @('EventLogName', 'DashboardName', 'YourDomain', 'YourFullDomain', 'AccessPort', 'OUComputerPath', 'OUGrpPath', 'OUUsrPath', 'UDScriptRoot', 'NavBarLogo', 'UploadTemp')

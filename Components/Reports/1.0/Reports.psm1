@@ -34,42 +34,51 @@ function Get-UserReports {
         New-UDDynamic -Id 'Report' -content {
             New-UDGrid -Spacing '1' -Container -Content {
                 switch ($ReportType) {
-                    Disbled {
-                        $AccountReport = Get-ADUser -Filter { (Enabled -eq $False) } -Properties samaccountname, UserPrincipalName, GivenName, Surname, displayname | Select-Object GivenName, Surname, samaccountname, UserPrincipalName, displayname | Foreach-Object { 
+                    disabled {
+                        $AccountReport = Search-ADAccount -AccountDisabled -UsersOnly | Select-Object samaccountname, UserPrincipalName, DistinguishedName | Foreach-Object { 
                             [PSCustomObject]@{
-                                Name              = $_.GivenName + " " + $_.Surname
-                                DisplayName       = $_.DisplayName
                                 SamAccountName    = $_.SamAccountName
                                 UserPrincipalName = $_.UserPrincipalName
+                                DistinguishedName = $_.DistinguishedName
                             }
                         }
                     }
-                    Locked {
-                        $AccountReport = Get-ADUser -Filter { (lockedout -eq $False) } -Properties samaccountname, UserPrincipalName, GivenName, Surname, displayname | Select-Object GivenName, Surname, samaccountname, UserPrincipalName, displayname | Foreach-Object { 
+                    lockedout {
+                        $AccountReport = Search-ADAccount -LockedOut -UsersOnly | Select-Object samaccountname, UserPrincipalName, DistinguishedName | Foreach-Object { 
                             [PSCustomObject]@{
-                                Name              = $_.GivenName + " " + $_.Surname
-                                DisplayName       = $_.DisplayName
                                 SamAccountName    = $_.SamAccountName
                                 UserPrincipalName = $_.UserPrincipalName
+                                DistinguishedName = $_.DistinguishedName
                             }
                         }
                     }
-                    PasswordExpired {
-                        $AccountReport = Get-ADUser -Filter { (PasswordExpired -eq $true) } -Properties samaccountname, UserPrincipalName, GivenName, Surname, displayname | Select-Object GivenName, Surname, samaccountname, UserPrincipalName, displayname | Foreach-Object { 
+                    passwordexpired {
+                        $AccountReport = Search-ADAccount -PasswordExpired -UsersOnly | Select-Object samaccountname, UserPrincipalName, DistinguishedName | Select-Object samaccountname, UserPrincipalName, DistinguishedName | Foreach-Object { 
                             [PSCustomObject]@{
-                                Name              = $_.GivenName + " " + $_.Surname
-                                DisplayName       = $_.DisplayName
                                 SamAccountName    = $_.SamAccountName
                                 UserPrincipalName = $_.UserPrincipalName
+                                DistinguishedName = $_.DistinguishedName
+                            }
+                        }
+                    }
+                    accountexpired {
+                        $AccountReport = Search-ADAccount -AccountExpired -UsersOnly | Select-Object samaccountname, UserPrincipalName, DistinguishedName, AccountExpirationDate | Select-Object samaccountname, UserPrincipalName, DistinguishedName, AccountExpirationDate | Foreach-Object { 
+                            [PSCustomObject]@{
+                                SamAccountName        = $_.SamAccountName
+                                UserPrincipalName     = $_.UserPrincipalName
+                                DistinguishedName     = $_.DistinguishedName
+                                AccountExpirationDate = $_.AccountExpirationDate 
                             }
                         }
                     }
                 }
                 $MoreADUserColumns = @(
-                    New-UDTableColumn -Property Name -Title "Name" -IncludeInSearch -IncludeInExport -DefaultSortColumn
-                    New-UDTableColumn -Property DisplayName -Title "DisplayName" -IncludeInSearch -IncludeInExport
-                    New-UDTableColumn -Property SamAccountName -Title "SamAccountName" -IncludeInSearch -IncludeInExport
+                    New-UDTableColumn -Property SamAccountName -Title "SamAccountName" -IncludeInSearch -IncludeInExport -DefaultSortColumn
                     New-UDTableColumn -Property UserPrincipalName -Title "UPN" -IncludeInSearch -IncludeInExport
+                    New-UDTableColumn -Property DistinguishedName -Title "DistinguishedName" -IncludeInSearch -IncludeInExport
+                    if ($ReportType -eq "accountexpired") {
+                        New-UDTableColumn -Property AccountExpirationDate -Title "AccountExpirationDate" -IncludeInSearch -IncludeInExport
+                    }
                 )
 
                 New-UDGrid -Item -Size 12 -Content {
@@ -105,21 +114,17 @@ function Get-ComputerReport {
         }
         New-UDDynamic -Id 'Report' -content {
             New-UDGrid -Spacing '1' -Container -Content {
-                $ComputerReport = Get-ADComputer -Filter { (Enabled -eq $False) } -Properties name, samaccountname, DistinguishedName, managedby, description | Select-Object name, samaccountname, DistinguishedName, managedby, description | Foreach-Object { 
+                $ComputerReport = Search-ADAccount -AccountDisabled -ComputersOnly | Select-Object Name, samaccountname, UserPrincipalName, DistinguishedName | Select-Object name, samaccountname, DistinguishedName | Foreach-Object { 
                     [PSCustomObject]@{
                         Name              = $_.Name
                         SamAccountName    = $_.SamAccountName
-                        managedby         = $_.managedby
                         DistinguishedName = $_.DistinguishedName
-                        description       = $_.description
                     }
                 }
 
                 $Columns = @(
                     New-UDTableColumn -Property Name -Title "Name" -IncludeInSearch -IncludeInExport -DefaultSortColumn
                     New-UDTableColumn -Property SamAccountName -Title "SamAccountName" -IncludeInSearch -IncludeInExport
-                    New-UDTableColumn -Property description -Title "Description" -IncludeInSearch -IncludeInExport
-                    New-UDTableColumn -Property managedby -Title "Managed by" -IncludeInSearch -IncludeInExport
                     New-UDTableColumn -Property DistinguishedName -Title "DistinguishedName" -IncludeInSearch -IncludeInExport
                 )
 
