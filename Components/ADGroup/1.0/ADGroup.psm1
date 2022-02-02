@@ -613,20 +613,26 @@ Function Add-ToGroupExcel {
         }
     } -Footer {
         New-UDButton -Text "Execute" -OnClick { 
-            try {
-                $ExcelFile = Import-Excel -Path "$($UploadTemp)$($Session:FileName)"
-            }
-            catch {
-                Show-UDToast -Message "Cloud not import the excel file!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+            if ($Session:FileName -notlike "*.xlsx") {
+                Show-UDToast -Message "You can only upload Excel files *.xlsx" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                 Break
             }
-            foreach ($getinfo in $ExcelFile) {
-                Add-ADGroupMember -Identity $getinfo.group -members $getinfo.objectname
-                if ($ActiveEventLog -eq "True") {
-                    Write-EventLog -LogName $EventLogName -Source "AddToGroup" -EventID 10 -EntryType Information -Message "$($User) did add $($getinfo.objectname) to $($getinfo.group)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+            else {
+                try {
+                    $ExcelFile = Import-Excel -Path "$($UploadTemp)$($Session:FileName)"
                 }
+                catch {
+                    Show-UDToast -Message "Cloud not import the excel file!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                    Break
+                }
+                foreach ($getinfo in $ExcelFile) {
+                    Add-ADGroupMember -Identity $getinfo.group -members $getinfo.objectname
+                    if ($ActiveEventLog -eq "True") {
+                        Write-EventLog -LogName $EventLogName -Source "AddToGroup" -EventID 10 -EntryType Information -Message "$($User) did add $($getinfo.objectname) to $($getinfo.group)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                    }
+                }
+                Show-UDToast -Message "All of the users from the file was added to the groups!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
             }
-            Show-UDToast -Message "All of the users from the file was added to the groups!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
         }
         New-UDButton -Text "Close" -OnClick {
             Hide-UDModal
