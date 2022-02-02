@@ -43,7 +43,7 @@ function Get-UserReports {
                             }
                         }
                     }
-                    lockedout {
+                    locked {
                         $AccountReport = Search-ADAccount -LockedOut -UsersOnly | Select-Object samaccountname, UserPrincipalName, DistinguishedName | Foreach-Object { 
                             [PSCustomObject]@{
                                 SamAccountName    = $_.SamAccountName
