@@ -597,9 +597,9 @@ Function Add-ToGroupExcel {
     Show-UDModal -Header { "Add to group from excel file" } -Content {
         New-UDGrid -Spacing '1' -Container -Content {
             New-UDDynamic -Id 'FileImport' -content {
-                New-UDGrid -Item -Size 3 -Content { }
-                New-UDGrid -Item -Size 7 -Content {
-                    New-UDUpload -Text 'Choose file' -OnUpload {
+                New-UDGrid -Item -Size 5 -Content { }
+                New-UDGrid -Item -Size 5 -Content {
+                    New-UDUpload -Id "UploadBtn" -Text 'Choose file' -OnUpload {
                         $Data = $Body | ConvertFrom-Json
                         $bytes = [System.Convert]::FromBase64String($Data.Data)
                         [System.IO.File]::WriteAllBytes("$($UploadTemp)$($Data.Name)", $bytes)
@@ -609,6 +609,13 @@ Function Add-ToGroupExcel {
                     New-UDHtml -Markup "<b>Uploaded file:</b> $($Session:FileName)"
                 }
                 New-UDGrid -Item -Size 2 -Content { }
+            }
+            New-UDGrid -Item -Size 12 -Content {
+                New-UDHTML -Markup "<b>Error report</b></b>"
+                New-UDTypography -Text "If you click in the editor and then press ctrl+f you can search, to download the report click on the Download log button."
+            }
+            New-UDGrid -Item -Size 12 -Content {
+                New-UDCodeEditor -Id 'Report' -ReadOnly -Height 450
             }
         }
     } -Footer {
@@ -622,22 +629,60 @@ Function Add-ToGroupExcel {
                     $ExcelFile = Import-Excel -Path "$($UploadTemp)$($Session:FileName)"
                 }
                 catch {
-                    Show-UDToast -Message "Cloud not import the excel file!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                    Show-UDToast -Message "Could not import the excel file!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                     Break
                 }
-                foreach ($getinfo in $ExcelFile) {
-                    Add-ADGroupMember -Identity $getinfo.group -members $getinfo.objectname
-                    if ($ActiveEventLog -eq "True") {
-                        Write-EventLog -LogName $EventLogName -Source "AddToGroup" -EventID 10 -EntryType Information -Message "$($User) did add $($getinfo.objectname) to $($getinfo.group)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                $Btns = @("ExecuteBtn", "CloseBtn", "LogBtn", "UploadBtn")
+
+                foreach ($btn in $Btns) {
+                    Set-UDElement -Id "$($btn)" -Properties @{
+                        disabled = $true 
                     }
                 }
-                Show-UDToast -Message "All of the users from the file was added to the groups!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+
+                $ErrorReport = @("")
+                foreach ($getinfo in $ExcelFile) {
+                    if ($Null -ne $getinfo.group) {
+                        if ($Null -ne $getinfo.objectname) {
+                            try {
+                                Add-ADGroupMember -Identity $getinfo.group -members $getinfo.objectname
+                                if ($ActiveEventLog -eq "True") {
+                                    Write-EventLog -LogName $EventLogName -Source "AddToGroup" -EventID 10 -EntryType Information -Message "$($User) did add $($getinfo.objectname) to $($getinfo.group)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                                }
+                            }
+                            catch {
+                                $ErrorReport += "Could not add $($getinfo.objectname) to $($getinfo.group)"
+                            }
+                        }
+                    }
+                    else {
+                        $ErrorReport += "Skipped user $($getinfo.objectname) as group was missing in the file!"
+                    }
+                    $JobOutput = $ErrorReport -join ([Environment]::NewLine)
+                    Set-UDElement -Id 'Report' -Properties @{
+                        code = $JobOutput
+                    }
+                }
+                Remove-Item -Path "$($UploadTemp)$($Session:FileName)" -Force
+                $Session:FileName = ""
+                Sync-UDElement -id "FileImport"
+                Show-UDToast -Message "Everything is done!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                
+                foreach ($btn in $Btns) {
+                    Set-UDElement -Id "$($btn)" -Properties @{
+                        disabled = $false 
+                    }
+                }
             }
-        }
+        } -Id "ExecuteBtn"
+        New-UDButton -Text 'Download Log' -OnClick {
+            $code = (Get-UDElement -Id 'Report').code
+            Start-UDDownload -StringData $code -FileName "Report_BulkAddUsrToGroup_$(Get-Date).log"
+        } -id 'LogBtn'
         New-UDButton -Text "Close" -OnClick {
             Hide-UDModal
-        }
-    } -FullWidth -MaxWidth 'xs' -Persistent
+        } -id "CloseBtn"
+    } -FullWidth -MaxWidth 'md' -Persistent
 }
 
 Export-ModuleMember -Function "Add-ToGroupExcel", "Show-WhosMemberInGroup", "New-ADGrp", "Add-MultiGroupBtn", "Edit-GroupInfoBtn", "Set-GroupScopeBtn", "Set-GroupCategoryBtn", "Show-ADGroupMemberOf"
