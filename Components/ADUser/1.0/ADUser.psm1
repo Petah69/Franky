@@ -91,14 +91,12 @@ function New-PasswordADUserBtn {
     } -content { 
         New-UDButton -Icon (New-UDIcon -Icon key) -size medium -Onclick {
             Show-UDModal -Header { "Change password for $($UserName)" } -Content {
-                New-UDDynamic -Id 'ChangePWForUser' -content {
-                    New-UDGrid -Spacing '1' -Container -Content {
-                        New-UDGrid -Item -Size 12 -Content {
-                            New-UDHTML -Markup "Enter the desired password, the password must be at least 10 characters.</br>"
-                            New-UDDynamic -Id 'generatepassword' -content {
-                                $RndPwd = New-RndPassword
-                                New-UDTypography -Text "$RndPwd" -Style @{ 'font-weight' = '700' }
-                            }
+                New-UDGrid -Spacing '1' -Container -Content {
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDHTML -Markup "Enter the desired password, the password must be at least 10 characters.</br>"
+                        New-UDDynamic -Id 'generatepassword' -content {
+                            $RndPwd = New-RndPassword
+                            New-UDTypography -Text "$($RndPwd)" -Style @{ 'font-weight' = '700' }
                             New-UDTooltip -TooltipContent {
                                 New-UDTypography -Text "Use this password"
                             } -content { 
@@ -111,28 +109,26 @@ function New-PasswordADUserBtn {
                                     }
                                 }
                             }
-                            New-UDTooltip -TooltipContent {
-                                New-UDTypography -Text "Generate a new random password"
-                            } -content { 
-                                New-UDButton -Icon (New-UDIcon -Icon sync_alt) -Size small -OnClick {
-                                    Sync-UDElement -Id 'generatepassword'
-                                }
+                        }
+                        New-UDTooltip -TooltipContent {
+                            New-UDTypography -Text "Generate a new random password"
+                        } -content { 
+                            New-UDButton -Icon (New-UDIcon -Icon sync_alt) -Size small -OnClick {
+                                Sync-UDElement -Id 'generatepassword'
                             }
-                            New-UDHTML -Markup "</br>"
                         }
-                        New-UDGrid -Item -Size 5 -Content {
-                            New-UDTextbox -id "txtpw1" -Icon (New-UDIcon -Icon 'key') -Label 'New password' -Type password -FullWidth
-                        }
-                        New-UDGrid -Item -Size 2 -Content { }
-                        New-UDGrid -Item -Size 5 -Content {
-                            New-UDTextbox -id "txtpw2" -Icon (New-UDIcon -Icon 'key') -Label 'Verify password' -Type password -FullWidth
-                        }
-                        New-UDGrid -Item -Size 12 -Content {
-                            New-UDCheckBox -id "chckpwchange" -Label 'Set so user need to change there password at next login?' -LabelPlacement end
-                        }
+                        New-UDHTML -Markup "</br>"
                     }
-                } -LoadingComponent {
-                    New-UDProgress -Circular
+                    New-UDGrid -Item -Size 5 -Content {
+                        New-UDTextbox -id "txtpw1" -Icon (New-UDIcon -Icon 'key') -Value '' -Label 'New password' -Type password -FullWidth
+                    }
+                    New-UDGrid -Item -Size 2 -Content { }
+                    New-UDGrid -Item -Size 5 -Content {
+                        New-UDTextbox -id "txtpw2" -Icon (New-UDIcon -Icon 'key') -Value '' -Label 'Verify password' -Type password -FullWidth
+                    }
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDCheckBox -id "chckpwchange" -Label 'Set so user need to change there password at next login?' -LabelPlacement end
+                    }
                 }
             } -Footer {
                 New-UDButton -Text "Change" -Size medium -OnClick {
@@ -317,7 +313,7 @@ Function Compare-ADUserGroupsBtn {
                                         else {
                                             New-UDGrid -Item -Size 12 -Content {
                                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                                New-UDTable -id "CompTable" -Data $CompData -Columns $Columns -DefaultSortDirection "Ascending" -TextOption $SearchOption -ShowSearch -ShowSelection -ShowPagination -Dense -Sort -Export -ExportOption "xlsx, PDF" -PageSize 200                      
+                                                New-UDTable -id "CompTable" -Data $CompData -Columns $Columns -DefaultSortDirection "Ascending" -TextOption $SearchOption -ShowSearch -ShowSelection -ShowPagination -Dense -Sort -Export -ExportOption "xlsx, PDF, CSV" -PageSize 200                      
                                             }
                                         }
                                     }
@@ -709,7 +705,7 @@ function Show-WhatUserManage {
                             New-UDTableColumn -Property DistinguishedName -Title "Distinguished name" -IncludeInSearch -IncludeInExport
                         )
                         New-UDGrid -Item -Size 12 -Content {
-                            New-UDTable -Id 'MoreADTable' -Data $MoreADUserData -Columns $MoreADUserColumns -DefaultSortDirection “Ascending” -ShowExport -ShowSearch -ShowPagination -Dense -Sort -PageSize 10 -PageSizeOptions @(10, 20, 30, 40)
+                            New-UDTable -Id 'MoreADTable' -Data $MoreADUserData -Columns $MoreADUserColumns -DefaultSortDirection “Ascending” -Export -ExportOption "xlsx, PDF, CSV" -ShowSearch -ShowPagination -Dense -Sort -PageSize 10 -PageSizeOptions @(10, 20, 30, 40)
                         }
                     }
                 } -LoadingComponent {

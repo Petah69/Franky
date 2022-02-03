@@ -50,20 +50,14 @@ $Navigation = @(
         }
     }
     New-UDListItem -Label 'Generate reports' -Icon (New-UDIcon -Icon list_ul -Size lg) -Children {
-        New-UDListItem -Label 'Disabled users' -OnClick { 
-            Get-UserReports -ReportType "disabled" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+        New-UDListItem -Label 'Generate user reports' -OnClick { 
+            Get-UserReports -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
         }
-        New-UDListItem -Label 'Locked out users' -OnClick { 
-            Get-UserReports -ReportType "locked" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
-        }
-        New-UDListItem -Label 'User password has expired' -OnClick { 
-            Get-UserReports -ReportType "passwordexpired" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
-        }
-        New-UDListItem -Label 'Expired user accounts' -OnClick { 
-            Get-UserReports -ReportType "accountexpired" -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
-        }
-        New-UDListItem -Label 'Disabled computers' -OnClick { 
+        New-UDListItem -Label 'Generate computer reports' -OnClick { 
             Get-ComputerReport -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
+        }
+        New-UDListItem -Label 'Group' -OnClick { 
+            Get-ReportGroups -ActiveEventLog $ActiveEventLog -EventLogName $EventLogName -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
         }
     }
 )

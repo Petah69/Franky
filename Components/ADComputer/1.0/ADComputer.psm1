@@ -74,7 +74,7 @@ Function Show-MonitorInfoBtn {
                         else {
                             New-UDGrid -Item -Size 12 -Content {
                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                New-UDTable -Columns $Columns -Data $DisplayData -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 50
+                                New-UDTable -Columns $Columns -Data $DisplayData -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -PageSize 50
                             }
                         }
                     }
@@ -146,7 +146,7 @@ function Show-InstalledDriversBtn {
                         else {
                             New-UDGrid -Item -Size 12 -Content {
                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                New-UDTable -Id 'DriversSearchTable' -Data $DriversData -Columns $DriversColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 20
+                                New-UDTable -Id 'DriversSearchTable' -Data $DriversData -Columns $DriversColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -PageSize 20
                             }
                         }
                     }
@@ -306,7 +306,7 @@ function Show-NetAdpBtn {
                         else {
                             New-UDGrid -Item -Size 12 -Content {
                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                New-UDTable -Id 'AdapterSearchTable' -Data $AllAdapters -Columns $AdaptersColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 20
+                                New-UDTable -Id 'AdapterSearchTable' -Data $AllAdapters -Columns $AdaptersColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -PageSize 20
                             }
                         }
                     }
@@ -388,7 +388,7 @@ function Show-ProcessTableBtn {
                         else {
                             New-UDGrid -Item -Size 12 -Content {
                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                New-UDTable -Columns $Columns -Data $Processes -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 50
+                                New-UDTable -Columns $Columns -Data $Processes -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -PageSize 50
                             }
                         }
                     }
@@ -444,7 +444,7 @@ function Show-InstalledSoftwareBtn {
                         else {
                             New-UDGrid -Item -Size 12 -Content {
                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                New-UDTable -Id 'InstallSWSearchTable' -Data $InstallData -Columns $InstallColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 20
+                                New-UDTable -Id 'InstallSWSearchTable' -Data $InstallData -Columns $InstallColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -PageSize 20
                             }
                         }
                     }
@@ -503,7 +503,7 @@ function Show-AutostartTableBtn {
                         else {
                             New-UDGrid -Item -Size 12 -Content {
                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                New-UDTable -Columns $Columns -Data $Autostarts -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 50
+                                New-UDTable -Columns $Columns -Data $Autostarts -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -PageSize 50
                             }
                         }
                     }
@@ -702,7 +702,7 @@ function Show-ServicesTableBtn {
                         else {
                             New-UDGrid -Item -Size 12 -Content {
                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                New-UDTable -Columns $Columns -Data $Services -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 50
+                                New-UDTable -Columns $Columns -Data $Services -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -PageSize 50
                             }
                         }
                     }
@@ -850,7 +850,7 @@ function Remove-UserProfilesBtn {
                 else {
                     New-UDGrid -Item -Size 12 -Content {
                         $SearchOption = New-UDTableTextOption -Search "Search"
-                        New-UDTable -Id 'ComputerSearchTable' -Data $SearchComputerGroupData -Columns $SearchComputerGroupColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 20 -ShowSelection
+                        New-UDTable -Id 'ComputerSearchTable' -Data $SearchComputerGroupData -Columns $SearchComputerGroupColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -PageSize 20 -ShowSelection
                     }
                     New-UDGrid -Item -Size 12 -Content {
                         New-UDButton -Text "Delete selected" -OnClick {
@@ -996,7 +996,7 @@ Function Compare-ComputerGrpsBtn {
                                         else {
                                             New-UDGrid -Item -Size 12 -Content {
                                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                                New-UDTable -id "CompTable" -Data $CompData -Columns $Columns -DefaultSortDirection "Ascending" -TextOption $SearchOption -ShowSearch -ShowSelection -ShowPagination -Dense -Sort -Export -ExportOption "xlsx, PDF" -PageSize 200                      
+                                                New-UDTable -id "CompTable" -Data $CompData -Columns $Columns -DefaultSortDirection "Ascending" -TextOption $SearchOption -ShowSearch -ShowSelection -ShowPagination -Dense -Sort -Export -ExportOption "xlsx, PDF, CSV" -PageSize 200                      
                                             }
                                             New-UDGrid -Item -Size 12 -Content { 
                                                 New-UDButton -Text "Add to selected" -OnClick {
@@ -1166,7 +1166,7 @@ function Show-SchedualTaskTableBtn {
                         else {
                             New-UDGrid -Item -Size 12 -Content {
                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                New-UDTable -Columns $Columns -Data $Scheduals -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 50
+                                New-UDTable -Columns $Columns -Data $Scheduals -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -PageSize 50
                             }
                         }
                     }
@@ -1404,7 +1404,7 @@ Function Ping-ADComputer {
                         else {
                             New-UDGrid -Item -Size 12 -Content {
                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                New-UDTable -Id 'PingTable' -Data $PingResults -Columns $PingColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 20
+                                New-UDTable -Id 'PingTable' -Data $PingResults -Columns $PingColumns -DefaultSortDirection "Ascending" -Sort -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -PageSize 20
                             }
                             if ($ActiveEventLog -eq "True") {
                                 Write-EventLog -LogName $EventLogName -Source "SendPing" -EventID 10 -EntryType Information -Message "$($User) did ping $($Computer)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 

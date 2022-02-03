@@ -398,7 +398,7 @@ Function Show-ADGroupMemberOf {
                         else {
                             New-UDGrid -Item -Size 12 -Content {
                                 $SearchOption = New-UDTableTextOption -Search "Search"
-                                New-UDTable -id 'MemberOfTable' -Columns $Columns -Data $DisplayData -DefaultSortDirection "Ascending" -Sort -ShowSelection -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -PageSize 50
+                                New-UDTable -id 'MemberOfTable' -Columns $Columns -Data $DisplayData -DefaultSortDirection "Ascending" -Sort -ShowSelection -TextOption $SearchOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -PageSize 50
                             }
                         }
                         if ($null -ne $DisplayData) {
@@ -566,7 +566,7 @@ function Show-WhosMemberInGroup {
                     else {
                         New-UDGrid -Item -Size 12 -Content {
                             $SearchMemberOption = New-UDTableTextOption -Search "Search after member"
-                            New-UDTable -Id 'GroupSearchTable' -Data $SearchGroupUserData -Columns $SearchGroupUserColumns -DefaultSortDirection "Ascending" -TextOption $SearchMemberOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -Sort -PageSize 10 -PageSizeOptions @(10, 20, 30, 40, 50)
+                            New-UDTable -Id 'GroupSearchTable' -Data $SearchGroupUserData -Columns $SearchGroupUserColumns -DefaultSortDirection "Ascending" -TextOption $SearchMemberOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -Sort -PageSize 10 -PageSizeOptions @(10, 20, 30, 40, 50)
                         }
                     }
                 }
@@ -595,8 +595,8 @@ Function Add-ToGroupExcel {
         [Parameter(Mandatory = $false)][string]$RemoteIpAddress
     )
     Show-UDModal -Header { "Add to group from excel file" } -Content {
-        New-UDDynamic -Id 'ImportFromExcel' -content {
-            New-UDGrid -Spacing '1' -Container -Content {
+        New-UDGrid -Spacing '1' -Container -Content {
+            New-UDDynamic -Id 'FileImport' -content {
                 New-UDGrid -Item -Size 3 -Content { }
                 New-UDGrid -Item -Size 7 -Content {
                     New-UDUpload -Text 'Choose file' -OnUpload {
@@ -604,7 +604,7 @@ Function Add-ToGroupExcel {
                         $bytes = [System.Convert]::FromBase64String($Data.Data)
                         [System.IO.File]::WriteAllBytes("$($UploadTemp)$($Data.Name)", $bytes)
                         $Session:FileName = $Data.Name
-                        Sync-UDElement -id 'ImportFromExcel'
+                        Sync-UDElement -Id "FileImport"
                     }
                     New-UDHtml -Markup "<b>Uploaded file:</b> $($Session:FileName)"
                 }

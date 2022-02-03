@@ -604,7 +604,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                                 else {
                                     New-UDGrid -Item -Size 12 -Content {
                                         $SearchGroupOption = New-UDTableTextOption -Search "Search"
-                                        New-UDTable -Id 'UserSearchTable' -Data $SearchUserGroupData -Columns $SearchUserGroupColumns -DefaultSortDirection "Ascending" -TextOption $SearchGroupOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF" -Sort -PageSize 10 -PageSizeOptions @(10, 20, 30, 40, 50) -ShowSelection
+                                        New-UDTable -Id 'UserSearchTable' -Data $SearchUserGroupData -Columns $SearchUserGroupColumns -DefaultSortDirection "Ascending" -TextOption $SearchGroupOption -ShowSearch -ShowPagination -Dense -Export -ExportOption "xlsx, PDF, CSV" -Sort -PageSize 10 -PageSizeOptions @(10, 20, 30, 40, 50) -ShowSelection
                                     }
                                     New-UDGrid -Item -Size 5 -Content {
                                         New-UDTooltip -TooltipContent {
