@@ -278,9 +278,9 @@ function Get-ReportGroups {
                         New-UDAlert -Severity 'info' -Text "Could not generate a report, it's likley because you don't have anything to report"
                     }
                 }
+            } -LoadingComponent {
+                New-UDProgress -Circular
             }
-        } -LoadingComponent {
-            New-UDProgress -Circular
         }
     } -Footer {
         New-UDButton -Text "Refresh" -OnClick {
