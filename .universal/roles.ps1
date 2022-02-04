@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #>
 
-
+# In each $Searcher.Filter you need to write the hole path to the OU like; CN=PSU.Execute,OU=Groups,DC=keepcodeopen,DC=com
 # Enter your Domain LDAP adress here like LDAP://DC=FR,DC=SE
 $RoleDomain = 'LDAP://'
 

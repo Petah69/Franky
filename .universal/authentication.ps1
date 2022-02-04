@@ -24,9 +24,9 @@ Set-PSUAuthenticationMethod -ScriptBlock {
     $Result = [Security.AuthenticationResult]::new()
 
     # Write your domain here for example; "LDAP://DC=FR,DC=SE"
-    $CurrentDomain = "LDAP://"
+    $AuthDomain = "LDAP://"
     
-    $domain = New-Object System.DirectoryServices.DirectoryEntry($CurrentDomain, ($Credential.UserName), $Credential.GetNetworkCredential().password)
+    $domain = New-Object System.DirectoryServices.DirectoryEntry($AuthDomain, ($Credential.UserName), $Credential.GetNetworkCredential().password)
     
     if ($domain.name -eq $null) {
         write-host "Authentication failed - please verify your username and password."
