@@ -14,10 +14,9 @@ For more information visit <https://keepcodeopen.com>
 # Public roadmap
 | Status | Goal | Labels | Date |
 | :---: | :--- | --- | --- |
-| ✅ | [Public beta 1 release](https://github.com/KeepCodeOpen/Franky/releases/tag/v1.0-Beta1) |`Done`| |
-| ✅ | [Public beta 2 release](https://github.com/KeepCodeOpen/Franky/releases/tag/v1.0-Beta2) |`Done`|`2022-02-04`|
-| 🚀 | [Public beta 3 release]() |`in progress`|`2022-02-20`|
-| 🚀 | [Work with the issues in repo and add more features from it]() |`in progress`| <https://github.com/KeepCodeOpen/Franky/issues> |
+| ✅ | [Public beta 1](https://github.com/KeepCodeOpen/Franky/releases/tag/v1.0-Beta1) |`Done`| |
+| ✅ | [Public beta 2](https://github.com/KeepCodeOpen/Franky/releases/tag/v1.0-Beta2) |`Done`|`2022-02-04`|
+| 🚀 | [Public beta 3]() |`in progress`|`2022-02-20`|
 | 🚀 | [Integrate AzureAD]() | | |
 | 🚀 | [Integrate Hyper-V]() | | |
 | 🚀 | [Integrate Exchange Online]() | | |
