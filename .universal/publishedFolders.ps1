@@ -17,3 +17,4 @@
 #>
 
 New-PSUPublishedFolder -RequestPath "/pictures" -Path "C:\ProgramData\UniversalAutomation\Repository\Pictures"
+New-PSUPublishedFolder -RequestPath "/templates" -Path "C:\ProgramData\UniversalAutomation\Repository\Templates"

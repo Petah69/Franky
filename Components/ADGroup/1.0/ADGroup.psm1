@@ -597,9 +597,9 @@ Function Add-ToGroupExcel {
     Show-UDModal -Header { "Add to group from excel file" } -Content {
         New-UDGrid -Spacing '1' -Container -Content {
             New-UDDynamic -Id 'FileImport' -content {
-                New-UDGrid -Item -Size 5 -Content { }
-                New-UDGrid -Item -Size 5 -Content {
-                    New-UDUpload -Id "UploadBtn" -Text 'Choose file' -OnUpload {
+                New-UDGrid -Item -Size 4 -Content { }
+                New-UDGrid -Item -Size 6 -Content {
+                    New-UDUpload -Id "UploadBtn" -Text 'Select file to run' -OnUpload {
                         $Data = $Body | ConvertFrom-Json
                         $bytes = [System.Convert]::FromBase64String($Data.Data)
                         [System.IO.File]::WriteAllBytes("$($UploadTemp)$($Data.Name)", $bytes)
@@ -632,7 +632,7 @@ Function Add-ToGroupExcel {
                     Show-UDToast -Message "Could not import the excel file!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
                     Break
                 }
-                $Btns = @("ExecuteBtn", "CloseBtn", "LogBtn", "UploadBtn")
+                $Btns = @("ExecuteBtn", "CloseBtn", "LogBtn", "UploadBtn", "templatebtn")
 
                 foreach ($btn in $Btns) {
                     Set-UDElement -Id "$($btn)" -Properties @{
@@ -675,6 +675,9 @@ Function Add-ToGroupExcel {
                 }
             }
         } -Id "ExecuteBtn"
+        New-UDButton -Text 'Download template' -size medium -OnClick {
+            Invoke-UDRedirect "https://$($TargetDomain)/templates/group_template.xlsx"
+        } -Id "templatebtn"
         New-UDButton -Text 'Download Log' -OnClick {
             $code = (Get-UDElement -Id 'Report').code
             Start-UDDownload -StringData $code -FileName "Report_BulkAddUsrToGroup_$(Get-Date).log"

@@ -40,6 +40,9 @@ else {
 $CheckHost = [System.Net.Dns]::GetHostName()
 $CurrentHost = $CheckHost + "." + $YourFullDomain + ":" + $AccessPort
 
+# Make sure that your connecting to the current host
+$TargetDomain = $CheckHost + "." + $YourFullDomain
+
 $Navigation = @(
     New-UDListItem -Label 'Users' -Icon (New-UDIcon -Icon user -Size lg) -OnClick { Invoke-UDRedirect '/ADUsers' }
     New-UDListItem -Label 'Computers' -Icon (New-UDIcon -Icon desktop -Size lg) -OnClick { Invoke-UDRedirect '/ADComputers' }

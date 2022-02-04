@@ -139,17 +139,40 @@ function Get-ComputerReport {
         [Parameter(Mandatory = $false)][string]$RemoteIpAddress
     )
 
-    Show-UDModal -Header { "Generate report over disabled computer accounts" } -Content {
-        if ($ActiveEventLog -eq "True") {
-            Write-EventLog -LogName $EventLogName -Source "ReportDisabledComputer" -EventID 10 -EntryType Information -Message "$($User) has generated a report over disabled computers`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
-        }
-        New-UDDynamic -Id 'Report' -content {
-            New-UDGrid -Spacing '1' -Container -Content {
-                $ComputerReport = Search-ADAccount -AccountDisabled -ComputersOnly | Select-Object Name, samaccountname, UserPrincipalName, DistinguishedName | Select-Object name, samaccountname, DistinguishedName | Foreach-Object { 
-                    [PSCustomObject]@{
-                        Name              = $_.Name
-                        SamAccountName    = $_.SamAccountName
-                        DistinguishedName = $_.DistinguishedName
+    Show-UDModal -Header { "Generate computer reports" } -Content {
+        New-UDGrid -Spacing '1' -Container -Content {
+            New-UDGrid -Item -Size 3 -Content {
+                New-UDSelect -id 'SelectComputerReportType' -FullWidth -Option {
+                    New-UDSelectOption -Name 'Select report...' -Value 1
+                    New-UDSelectOption -Name 'Disabled computers' -Value "disabled"
+                }
+            }
+            New-UDGrid -Item -Size 2 -Content {
+                New-UDButton -Text "Generate" -size small -Onclick {
+                    $SelectComputerReportType = Get-UDElement -Id 'SelectComputerReportType'
+
+                    if ([string]::IsNullOrEmpty($SelectComputerReportType.value) -or $SelectComputerReportType.value -eq 1) {
+                        Show-UDToast -Message "You need to select an option!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                    else {
+                        Sync-UDElement -Id 'ComputerReport'
+                    }
+                }
+            }
+            New-UDGrid -Item -Size 7 -Content { }
+            New-UDDynamic -Id 'ComputerReport' -content {
+                $SelectComputerReportType = Get-UDElement -Id 'SelectComputerReportType'
+                    
+                switch ($SelectComputerReportType.value) {
+                    disabled {
+                        $ComputerReport = Search-ADAccount -AccountDisabled -ComputersOnly | Select-Object name, samaccountname, DistinguishedName | Foreach-Object { 
+                            [PSCustomObject]@{
+                                Name              = $_.Name
+                                SamAccountName    = $_.SamAccountName
+                                DistinguishedName = $_.DistinguishedName
+                            }
+                        }
                     }
                 }
 
@@ -158,13 +181,22 @@ function Get-ComputerReport {
                     New-UDTableColumn -Property SamAccountName -Title "SamAccountName" -IncludeInSearch -IncludeInExport
                     New-UDTableColumn -Property DistinguishedName -Title "DistinguishedName" -IncludeInSearch -IncludeInExport
                 )
-
-                New-UDGrid -Item -Size 12 -Content {
-                    New-UDTable -Id 'ComputerReportTable' -Data $ComputerReport -Columns $Columns -DefaultSortDirection “Ascending” -Export -ExportOption "xlsx, PDF, CSV" -ShowSearch -ShowPagination -Dense -Sort -PageSize 20 -PageSizeOptions @(30, 40, 50, 60)
+                if ($Null -ne $ComputerReport) {
+                    if ($ActiveEventLog -eq "True") {
+                        Write-EventLog -LogName $EventLogName -Source "Report$($SelectComputerReportType.value)Computer" -EventID 10 -EntryType Information -Message "$($User) has generated a report over $($SelectComputerReportType.value) computers`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                    }
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDTable -Id 'ComputerReportTable' -Data $ComputerReport -Columns $Columns -DefaultSortDirection “Ascending” -Export -ExportOption "xlsx, PDF, CSV" -ShowSearch -ShowPagination -Dense -Sort -PageSize 20 -PageSizeOptions @(30, 40, 50, 60)
+                    }
                 }
+                else {
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDAlert -Severity 'info' -Text "Could not generate a report, it's likley because you don't have anything to report"
+                    }
+                }
+            } -LoadingComponent {
+                New-UDProgress -Circular
             }
-        } -LoadingComponent {
-            New-UDProgress -Circular
         }
     } -Footer {
         New-UDButton -Text "Refresh" -OnClick {
@@ -186,19 +218,42 @@ function Get-ReportGroups {
         [Parameter(Mandatory = $false)][string]$RemoteIpAddress
     )
 
-    Show-UDModal -Header { "Generate report over empty groups" } -Content {
-        if ($ActiveEventLog -eq "True") {
-            Write-EventLog -LogName $EventLogName -Source "ReportEmptyGroups" -EventID 10 -EntryType Information -Message "$($User) has generated a report over empty groups`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
-        }
-        New-UDDynamic -Id 'Report' -content {
-            New-UDGrid -Spacing '1' -Container -Content {
-                $GroupReport = Get-ADGroup -Filter * -Properties Members, ManagedBy, name, samaccountname, DistinguishedName, description | Where-Object { -not $_.members } | Select-Object ManagedBy, name, samaccountname, DistinguishedName, description | Foreach-Object { 
-                    [PSCustomObject]@{
-                        Name              = $_.Name
-                        SamAccountName    = $_.SamAccountName
-                        ManagedBy         = $_.ManagedBy
-                        DistinguishedName = $_.DistinguishedName
-                        description       = $_.description
+    Show-UDModal -Header { "Generate group reports" } -Content {
+        New-UDGrid -Spacing '1' -Container -Content {
+            New-UDGrid -Item -Size 3 -Content {
+                New-UDSelect -id 'SelectGroupReportType' -FullWidth -Option {
+                    New-UDSelectOption -Name 'Select report...' -Value 1
+                    New-UDSelectOption -Name 'Empty groups' -Value "Empty"
+                }
+            }
+            New-UDGrid -Item -Size 2 -Content {
+                New-UDButton -Text "Generate" -size small -Onclick {
+                    $SelectGroupReportType = Get-UDElement -Id 'SelectGroupReportType'
+
+                    if ([string]::IsNullOrEmpty($SelectGroupReportType.value) -or $SelectGroupReportType.value -eq 1) {
+                        Show-UDToast -Message "You need to select an option!" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                        Break
+                    }
+                    else {
+                        Sync-UDElement -Id 'GroupReport'
+                    }
+                }
+            }
+            New-UDGrid -Item -Size 7 -Content { }
+            New-UDDynamic -Id 'GroupReport' -content {
+                $SelectGroupReportType = Get-UDElement -Id 'SelectGroupReportType'
+
+                switch ($SelectGroupReportType.value) {
+                    Empty {
+                        $GroupReport = Get-ADGroup -Filter * -Properties Members, ManagedBy, name, samaccountname, DistinguishedName, description | Where-Object { -not $_.members } | Select-Object ManagedBy, name, samaccountname, DistinguishedName, description | Foreach-Object { 
+                            [PSCustomObject]@{
+                                Name              = $_.Name
+                                SamAccountName    = $_.SamAccountName
+                                ManagedBy         = $_.ManagedBy
+                                DistinguishedName = $_.DistinguishedName
+                                description       = $_.description
+                            }
+                        }
                     }
                 }
 
@@ -210,8 +265,18 @@ function Get-ReportGroups {
                     New-UDTableColumn -Property DistinguishedName -Title "DistinguishedName" -IncludeInSearch -IncludeInExport
                 )
 
-                New-UDGrid -Item -Size 12 -Content {
-                    New-UDTable -Id 'ComputerReportTable' -Data $GroupReport -Columns $Columns -DefaultSortDirection “Ascending” -Export -ExportOption "xlsx, PDF, CSV" -ShowSearch -ShowPagination -Dense -Sort -PageSize 20 -PageSizeOptions @(30, 40, 50, 60)
+                if ($Null -ne $GroupReport) {
+                    if ($ActiveEventLog -eq "True") {
+                        Write-EventLog -LogName $EventLogName -Source "Report$($SelectGroupReportType.value)Groups" -EventID 10 -EntryType Information -Message "$($User) has generated a report over $($SelectGroupReportType.value) groups`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                    }
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDTable -Id 'GroupReportTable' -Data $GroupReport -Columns $Columns -DefaultSortDirection “Ascending” -Export -ExportOption "xlsx, PDF, CSV" -ShowSearch -ShowPagination -Dense -Sort -PageSize 20 -PageSizeOptions @(30, 40, 50, 60)
+                    }
+                }
+                else {
+                    New-UDGrid -Item -Size 12 -Content {
+                        New-UDAlert -Severity 'info' -Text "Could not generate a report, it's likley because you don't have anything to report"
+                    }
                 }
             }
         } -LoadingComponent {
