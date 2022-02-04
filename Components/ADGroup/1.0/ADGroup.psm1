@@ -640,12 +640,12 @@ Function Add-ToGroupExcel {
                     }
                 }
 
-                $ErrorReport = @("")
+                $ErrorReport = @("Please wait, this can take a while!")
                 foreach ($getinfo in $ExcelFile) {
                     if ($Null -ne $getinfo.group) {
                         if ($Null -ne $getinfo.objectname) {
                             try {
-                                Add-ADGroupMember -Identity $getinfo.group -members $getinfo.objectname
+                                Add-ADGroupMember -Identity $getinfo.group.trim() -members $getinfo.objectname.trim()
                                 if ($ActiveEventLog -eq "True") {
                                     Write-EventLog -LogName $EventLogName -Source "AddToGroup" -EventID 10 -EntryType Information -Message "$($User) did add $($getinfo.objectname) to $($getinfo.group)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
                                 }
