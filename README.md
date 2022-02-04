@@ -11,9 +11,9 @@ For more information how to use some of our functions visit <https://keepcodeope
   
 For more information visit <https://keepcodeopen.com>  
 
-# Version 1.0 Beta 2 2022-02-04
+## Version 1.0 Beta 2 2022-02-04
 
-## New functions
+### New functions
 - Generate report over disabled computer objects
 - Generate report over locked out users
 - Generate report over Users password has expired
@@ -23,20 +23,20 @@ For more information visit <https://keepcodeopen.com>
 - Generate report over empty groups
 - Bulk add users/groups/computers to group
 
-## Updated functions
+### Updated functions
 - Added CSV as a export option
 
-## Bug fixes
+### Bug fixes
 - Fixed typos
 - Fixed so generated password will autofyll in the password fields
 
-## Other
+### Other
 I have done it easier to upgrade Franky now.  
 What I have done is that I have moved many of the variables that are static to the variables.ps1 file instead of the dashboard.ps1.  
 I have also made a upgrade manual, you can find it under Docs/Instructions here in the repo or at this link:  
 <https://www.keepcodeopen.com/how-to-upgrade-franky/>
 
-## Important
+### Important
 We have done updates in variables.ps1, environments.ps1, publishedFolders.ps1 and dashboards.ps1 in the .universal folder.  
 Also we have done modifications in the dashboard.ps1 under the Dashboards folder.  
 Make sure that you take a look at the changes and add it to your own configuration.
