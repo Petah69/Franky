@@ -1044,7 +1044,9 @@ Function New-ADUserFranky {
                         New-UDSelect -id 'UPN' -FullWidth -Option {
                             New-UDSelectOption -Name "Select Prefix..." -Value 1
                             foreach ($UPNs in $Combined) {
-                                New-UDSelectOption -Name "$($UPNs)" -Value "$($UPNs)"
+                                if ($null -ne $UPNs) {
+                                    New-UDSelectOption -Name "$($UPNs)" -Value "$($UPNs)"
+                                }
                             }
                         }
                     }
@@ -1058,16 +1060,16 @@ Function New-ADUserFranky {
                         New-UDDynamic -Id 'generatepassword' -content {
                             $RndPwd = New-RndPassword
                             New-UDTypography -Text "$($RndPwd)" -Style @{ 'font-weight' = '700' }
-                        }
-                        New-UDTooltip -TooltipContent {
-                            New-UDTypography -Text "Use this password"
-                        } -content { 
-                            New-UDButton -Icon (New-UDIcon -Icon paste) -Size small -OnClick {
-                                Set-UDElement -Id "txtPW1" -Properties @{
-                                    Value = $RndPwd
-                                }
-                                Set-UDElement -Id "txtPW2" -Properties @{
-                                    Value = $RndPwd
+                            New-UDTooltip -TooltipContent {
+                                New-UDTypography -Text "Use this password"
+                            } -content { 
+                                New-UDButton -Icon (New-UDIcon -Icon paste) -Size small -OnClick {
+                                    Set-UDElement -Id "txtPW1" -Properties @{
+                                        Value = $RndPwd
+                                    }
+                                    Set-UDElement -Id "txtPW2" -Properties @{
+                                        Value = $RndPwd
+                                    }
                                 }
                             }
                         }
