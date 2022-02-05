@@ -49,7 +49,7 @@ Write-Output "Adding user to Franky.Administrator group..."
 Add-ADGroupMember -Identity "Franky.Administrator" -Members $UserToAddAsAdmin
 
 Write-output "Opening port 80 and 443 on the server..."
-New-NetFirewallRule -DisplayName "PowerShell Universal port 80 and 443" -Direction Inbound -LocalPort 80, 443 -Protocol TCP
+New-NetFirewallRule -Name "Allow PowerShell Universal port 80 and 443" -DisplayName "Allow PowerShell Universal port 80 and 443" -Program "C:\Program Files (x86)\Universal\Universal.Server.exe" -Direction Inbound -LocalPort 80, 443 -Protocol TCP
 
 Write-Output "Creating new certification..."
 New-SelfSignedCertificate -DnsName $DNSDomain, $FQDN -CertStoreLocation "cert:\LocalMachine\My"

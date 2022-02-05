@@ -60,16 +60,17 @@ Function New-ADGrp {
                     New-UDGrid -Item -Size 6 -Content {
                         New-UDTypography -Text "Select Group Scope (Required)"
                         New-UDRadioGroup -id "radioScope" -Label "Group Scope" -Content {
+                            New-UDRadio -Label "Domain Local" -Value 'DomainLocal'
                             New-UDRadio -Label Global -Value 'Global'
                             New-UDRadio -Label Universal -Value 'Universal'
-                        }
+                        } -value 'Global'
                     }
                     New-UDGrid -Item -Size 6 -Content {
                         New-UDTypography -Text "Select Group Category (Required)"
                         New-UDRadioGroup -id "radioCategory" -Label "Group Category" -Content {
                             New-UDRadio -Label Security -Value 'Security'
                             New-UDRadio -Label Distribution -Value 'Distribution'
-                        }
+                        } -value 'Security'
                     }
                 }
             } -Footer {
