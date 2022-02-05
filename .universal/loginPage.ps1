@@ -16,4 +16,4 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #>
 
-New-PSULoginPage -Image "/pictures/" -Title "Franky v1.0 Beta 1" -PrimaryColor "white" -SecondaryColor "white" -SecondaryFontColor "black" -HeaderFontColor "black" -HeaderColor "rgba(0, 151, 207, 0.6)" -Copyright "© 2022 - KeepCodeOpen"
+New-PSULoginPage -Image "/pictures/" -Title "Franky v1.0 Beta 2.1" -PrimaryColor "white" -SecondaryColor "white" -SecondaryFontColor "black" -HeaderFontColor "black" -HeaderColor "rgba(0, 151, 207, 0.6)" -Copyright "© 2022 - KeepCodeOpen"

@@ -23,8 +23,11 @@ Set-PSUAuthenticationMethod -ScriptBlock {
 
     $Result = [Security.AuthenticationResult]::new()
 
-    # Write your domain here for example; "LDAP://DC=FR,DC=SE"
-    $AuthDomain = "LDAP://"
+    # Write your domain here for example; "LDAP://DC=Franky,DC=com"
+    $AuthDomain = ""
+
+    # Write the SID of the Franky.Access group in the variable below.
+    $FrankyAccessSID = ""
     
     $domain = New-Object System.DirectoryServices.DirectoryEntry($AuthDomain, ($Credential.UserName), $Credential.GetNetworkCredential().password)
     

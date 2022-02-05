@@ -16,9 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #>
 
-# In each $Searcher.Filter you need to write the hole path to the OU like; CN=PSU.Execute,OU=Groups,DC=keepcodeopen,DC=com
-# Enter your Domain LDAP adress here like LDAP://DC=FR,DC=SE
-$RoleDomain = 'LDAP://'
+# In $Searcher.Filter you need to write the hole path to the OU like; CN=PSU.Execute,OU=Groups,DC=Franky,DC=com
+# Enter your Domain LDAP adress here like LDAP://DC=Franky,DC=COM
+$RoleDomain = ""
 
 New-PSURole -Name "Reader" -Description "Readers have read-only access to UA. They cannot make changes to any entity within the system." -Policy {
     param(
