@@ -13,7 +13,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    along with this program.  If not, see <https://www.gnu.org/licenses/>..
 #>
 
 New-UDGrid -Spacing '1' -Container -Content {
@@ -507,9 +507,9 @@ New-UDGrid -Spacing '1' -Container -Content {
                                 New-UDProgress -Circular
                             }
                             New-UDDynamic -Id 'ComputerSearchGroupList' -content {
-                                $SearchComputerGroup = (Get-ADComputer -Filter "samaccountname -eq '$($ComputerName)$'"  -Properties memberOf | Select-Object -ExpandProperty memberOf) | ForEach-Object { $_.Replace("CN=", "").Split(", ") | Select-Object -First 1 }
+                                $SearchComputerGroup = (Get-ADComputer -Filter "samaccountname -eq '$($ComputerName)$'"  -Properties memberOf | Select-Object -ExpandProperty memberOf)
                                 $SearchComputerGroupData = $SearchComputerGroup | Foreach-Object { 
-                                    if ($null -ne ($grpComputer = Get-ADGroup -Filter "Name -eq '$($_)'" -Properties samAccountName, info, Description )) {
+                                    if ($null -ne ($grpComputer = Get-ADGroup -Filter "DistinguishedName -eq '$($_)'" -Properties samAccountName, info, Description )) {
                                         [PSCustomObject]@{
                                             Name        = $grpComputer.samAccountName
                                             Description = $grpComputer.Description

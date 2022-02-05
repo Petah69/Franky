@@ -17,13 +17,13 @@
 #>
 
 New-UDGrid -Spacing '1' -Container -Content {
-    New-UDGrid -Item -Size 1 -Content { }
-    New-UDGrid -Item -Size 10 -Content {
+    New-UDGrid -Item -LargeSize 1 -ExtraSmallSize 1 -Content { }
+    New-UDGrid -Item -LargeSize 10 -ExtraSmallSize 10 -Content {
         New-UDGrid -Spacing '1' -Container -Content {
-            New-UDGrid -Item -Size 3 -Content {
+            New-UDGrid -Item -LargeSize 3 -ExtraSmallSize 7 -Content {
                 New-UDTextbox -Id "txtName" -Icon (New-UDIcon -Icon 'user') -Label "Username or Mail (Wildcard * accepted)" -FullWidth
             }
-            New-UDGrid -Item -Size 3 -Content {
+            New-UDGrid -Item -LargeSize 3 -ExtraSmallSize 4 -Content {
                 New-UDButton -Icon (New-UDIcon -Icon 'search') -Size large -OnClick {
                     $SearchUserName = (Get-UDElement -Id "txtName").value
                     if ([string]::IsNullOrEmpty($SearchUserName)) {
@@ -38,10 +38,10 @@ New-UDGrid -Spacing '1' -Container -Content {
                 }
                 New-ADUserFranky -BoxToSync "txtName" -RefreshOnClose "UserSearchStart" -EventLogName $EventLogName -ActiveEventLog $ActiveEventLog -User $User -LocalIpAddress $LocalIpAddress -RemoteIpAddress $RemoteIpAddress
             }
-            New-UDGrid -Item -Size 6 -Content { }
+            New-UDGrid -Item -LargeSize 6 -ExtraSmallSize 1 -Content { }
         }
     }
-    New-UDGrid -Item -Size 1 -Content { }
+    New-UDGrid -Item -LargeSize 1 -ExtraSmallSize 1 -Content { }
 }
 
 New-UDGrid -Spacing '1' -Container -Content {
@@ -581,9 +581,9 @@ New-UDGrid -Spacing '1' -Container -Content {
                                 New-UDProgress -Circular
                             }
                             New-UDDynamic -Id 'UserSearchGroupList' -content {
-                                $SearchUserGroup = (Get-ADUser -Filter "samaccountname -eq '$($SearchUserName)'" -Properties memberOf | Select-Object -ExpandProperty memberOf) | ForEach-Object { $_.Replace("CN=", "").Split(", ") | Select-Object -First 1 }
+                                $SearchUserGroup = (Get-ADUser -Filter "samaccountname -eq '$($SearchUserName)'" -Properties memberOf | Select-Object -ExpandProperty memberOf)
                                 $SearchUserGroupData = $SearchUserGroup | Foreach-Object { 
-                                    if ($null -ne ($grp = Get-ADGroup -Filter "Name -eq '$($_)'" -Properties samAccountName, Info, Description )) {
+                                    if ($null -ne ($grp = Get-ADGroup -Filter "DistinguishedName -eq '$($_)'" -Properties samAccountName, Info, Description )) {
                                         [PSCustomObject]@{
                                             Name        = $grp.samAccountName
                                             Description = $grp.Description
@@ -642,6 +642,7 @@ New-UDGrid -Spacing '1' -Container -Content {
                             } -LoadingComponent {
                                 New-UDProgress -Circular
                             }
+                            New-UDGrid -Item -Size 6 -Content { }
                             New-UDGrid -Item -Size 3 -Content { 
                                 New-UDTextbox -Id "txtSearchUserADD" -Icon (New-UDIcon -Icon 'users') -Label "Ange gruppnamn" -FullWidth
                             }
