@@ -103,7 +103,25 @@ Function New-ADGrp {
                             if ([string]::IsNullOrEmpty($GrpDisplayName)) {
                                 $GrpDisplayName = $GrpsAmAccountName
                             }
-                            if (Get-ADUser -Filter "Samaccountname -eq '$($GrpOwner)'") {
+                            if ([string]::IsNullOrEmpty($GrpOwner)) {
+                                try {
+                                    New-ADGroup -Name $GrpCN -SamAccountName $GrpsAmAccountName -GroupCategory $GrpCategory -GroupScope $GrpScope -DisplayName $GrpDisplayName -Path $OUGrpPath -Description $GrpDescription -OtherAttributes @{ 'info' = $GrpInfo }
+                                    Show-UDToast -Message "$($GrpCN) has been created!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                    if ($ActiveEventLog -eq "True") {
+                                        Write-EventLog -LogName $EventLogName -Source "CreatedGroup" -EventID 10 -EntryType Information -Message "$($User) did create the group $($GrpCN)`nLocal IP:$($LocalIpAddress)`nExternal IP: $($RemoteIpAddress)" -Category 1 -RawData 10, 20 
+                                    }
+                                    Set-UDElement -Id $BoxToSync -Properties @{
+                                        Value = $GrpsAmAccountName
+                                    }
+                                    Sync-UDElement -id $RefreshOnClose
+                                    Hide-UDModal
+                                }
+                                catch {
+                                    Show-UDToast -Message "$($PSItem.Exception)" -MessageColor 'red' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
+                                    Break
+                                }
+                            }
+                            elseif (Get-ADUser -Filter "Samaccountname -eq '$($GrpOwner)'") {
                                 try {
                                     New-ADGroup -Name $GrpCN -SamAccountName $GrpsAmAccountName -GroupCategory $GrpCategory -GroupScope $GrpScope -DisplayName $GrpDisplayName -Path $OUGrpPath -Description $GrpDescription -ManagedBy $GrpOwner -OtherAttributes @{ 'info' = $GrpInfo }
                                     Show-UDToast -Message "$($GrpCN) has been created!" -MessageColor 'green' -Theme 'light' -TransitionIn 'bounceInUp' -CloseOnClick -Position center -Duration 3000
